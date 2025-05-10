@@ -17,11 +17,17 @@ int main()
     int sockfd;
 
     while(1) {
-        char command[MAX_COMMAND_LEN];
+        char command[MAX_STRING_LEN];
         scanf("%s", command);
 
         if (!strncmp(command, "login_admin", 11)) {
-            //
+            printf("username=");
+            char username[MAX_STRING_LEN];
+            scanf("%s", username);
+
+            printf("password=");
+            char password[MAX_STRING_LEN];
+            scnaf("%s", password);
         } else if (!strncmp(command, "add_user", 8)) {
             //
         } else if (!strncmp(command, "get_users", 9)) {

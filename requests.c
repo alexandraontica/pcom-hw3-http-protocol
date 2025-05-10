@@ -49,8 +49,8 @@ char *compute_get_request(char *host, char *url, char *query_params,
     return message;
 }
 
-char *compute_post_request(char *host, char *url, char* content_type, char **body_data,
-                            int body_data_fields_count, char **cookies, int cookies_count)
+char *compute_post_request(char *host, char *url, char* content_type, char *body_data,
+                           char **cookies, int cookies_count, char *token)
 {
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
@@ -69,17 +69,14 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
     */
     sprintf(line, "Content-Type: %s", content_type);
     compute_message(message, line);
-
-    for (int i = 0; i < body_data_fields_count; i++) {
-        strcat(body_data_buffer, body_data[i]);
         
-        if (i != body_data_fields_count - 1) {
-            strcat(body_data_buffer, "&");
-        }
-    }
-        
-    sprintf(line, "Content-Length: %ld", strlen(body_data_buffer));
+    sprintf(line, "Content-Length: %ld", strlen(body_data));
     compute_message(message, line);
+
+    if (token) {
+        sprintf(line, "Authorization: Bearer %s", token);
+		compute_message(message, line);
+    }
 
     // Step 4 (optional): add cookies
     if (cookies) {
@@ -97,7 +94,7 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
 
     // Step 6: add the actual payload data
     memset(line, 0, LINELEN);
-    strcat(message, body_data_buffer);
+    strcat(message, body_data);
 
     free(line);
     return message;

@@ -1,1 +1,1 @@
-#define MAX_COMMAND_LEN 30
+#define MAX_STRING_LEN 50

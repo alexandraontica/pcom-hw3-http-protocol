@@ -9,3 +9,5 @@ in requests am implementarea mea de la labul 9 pt post si get requests, o sa ada
 comentarii in engleza pentru consistency (asa erau in fisierele din lab)
 
 ruta de get e exact ca il lab + am adaugat tokenul pt authorisation + headerul la mesaj
+
+ruta de post: am scos body data count sau whatever, ii dau ca data direct jsonul sa il trimit; am adaugat headerul cu tokenul
