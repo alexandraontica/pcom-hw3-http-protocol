@@ -6,28 +6,24 @@
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
 #include <netdb.h>      /* struct hostent, gethostbyname */
 #include <arpa/inet.h>
-#include "helpers.h"
-#include "requests.h"
 #include "commands.h"
 
 int main()
 {
-    char *message;
-    char *response;
-    int sockfd;
-
     while(1) {
-        char command[MAX_STRING_LEN];
+        char command[MAX_LEN];
         scanf("%s", command);
 
         if (!strncmp(command, "login_admin", 11)) {
             printf("username=");
-            char username[MAX_STRING_LEN];
+            char username[MAX_LEN];
             scanf("%s", username);
 
             printf("password=");
-            char password[MAX_STRING_LEN];
-            scnaf("%s", password);
+            char password[MAX_LEN];
+            scanf("%s", password);
+
+            login_admin(username, password);
         } else if (!strncmp(command, "add_user", 8)) {
             //
         } else if (!strncmp(command, "get_users", 9)) {
