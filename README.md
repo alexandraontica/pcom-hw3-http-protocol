@@ -7,3 +7,5 @@ am pornit cu rezolvarea de la lab 9. am luat copy paste fisierele buffer, helper
 in requests am implementarea mea de la labul 9 pt post si get requests, o sa adaug in plus delete si put
 
 comentarii in engleza pentru consistency (asa erau in fisierele din lab)
+
+ruta de get e exact ca il lab + am adaugat tokenul pt authorisation + headerul la mesaj

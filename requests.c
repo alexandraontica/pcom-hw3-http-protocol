@@ -10,13 +10,13 @@
 #include "requests.h"
 
 char *compute_get_request(char *host, char *url, char *query_params,
-                            char **cookies, int cookies_count)
+                            char **cookies, int cookies_count, char *token)
 {
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
 
     // Step 1: write the method name, URL, request params (if any) and protocol type
-    if (query_params != NULL) {
+    if (query_params) {
         sprintf(line, "GET %s?%s HTTP/1.1", url, query_params);
     } else {
         sprintf(line, "GET %s HTTP/1.1", url);
@@ -29,7 +29,12 @@ char *compute_get_request(char *host, char *url, char *query_params,
     compute_message(message, line);
 
     // Step 3 (optional): add headers and/or cookies, according to the protocol format
-    if (cookies != NULL) {
+    if (token) {
+        sprintf(line, "Authorization: Bearer %s", token);
+        compute_message(message, line);
+    }
+
+    if (cookies) {
         strcat(message, "Cookie: ");
         for (int i = 0; i < cookies_count; i++) {
             strcat(message, cookies[i]);
@@ -77,7 +82,7 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
     compute_message(message, line);
 
     // Step 4 (optional): add cookies
-    if (cookies != NULL) {
+    if (cookies) {
         strcat(message, "Cookie: ");
         for (int i = 0; i < cookies_count; i++) {
             strcat(message, cookies[i]);
