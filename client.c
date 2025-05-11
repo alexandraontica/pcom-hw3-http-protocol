@@ -25,9 +25,17 @@ int main()
 
             login_admin(username, password);
         } else if (!strncmp(command, "add_user", 8)) {
-            //
+            printf("username=");
+            char username[MAX_LEN];
+            scanf("%s", username);
+
+            printf("password=");
+            char password[MAX_LEN];
+            scanf("%s", password);
+
+            add_user(username, password);
         } else if (!strncmp(command, "get_users", 9)) {
-            //
+            get_users();
         } else if (!strncmp(command, "delete_user", 11)) {
             //
         } else if (!strncmp(command, "logout_admin", 12)) {

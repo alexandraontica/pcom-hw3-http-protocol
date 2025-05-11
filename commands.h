@@ -8,7 +8,11 @@
 #define CONTENT_TYPE "application/json"
 #define BASE_URL "/api/v1/tema"
 #define LOGIN_ADMIN_URL "/admin/login"
+#define ADD_USER_URL "/admin/users"
+#define GET_USERS_URL ADD_USER_URL
 
 void login_admin(char *username, char *password);
+void add_user(char *username, char *password);
+void get_users();
 
 #endif // __COMMANDS__
