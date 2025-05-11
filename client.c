@@ -1,11 +1,6 @@
 #include <stdio.h>      /* printf, sprintf */
 #include <stdlib.h>     /* exit, atoi, malloc, free */
-#include <unistd.h>     /* read, write, close */
 #include <string.h>     /* memcpy, memset */
-#include <sys/socket.h> /* socket, connect */
-#include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
-#include <netdb.h>      /* struct hostent, gethostbyname */
-#include <arpa/inet.h>
 #include "commands.h"
 
 int main()
@@ -69,7 +64,27 @@ int main()
 
             get_movie(id);
         } else if (!strncmp(command, "add_movie", 9)) {
-            //
+            printf("title=");
+            char title[MAX_LEN];
+            getchar();
+            fgets(title, MAX_LEN, stdin);           
+            title[strcspn(title, "\n")] = '\0';
+
+            printf("year=");
+            int year;
+            scanf("%d", &year);
+
+            printf("description=");
+            char description[MAX_LEN];
+            getchar();
+            fgets(description, MAX_LEN, stdin);           
+            description[strcspn(description, "\n")] = '\0';
+
+            printf("rating=");
+            double rating;
+            scanf("%lf", &rating);
+
+            add_movies(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie", 12)) {
             //
         } else if (!strncmp(command, "update_movie", 12)) {

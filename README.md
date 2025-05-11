@@ -1,5 +1,6 @@
 Username: alexandra.ontica  marius.tudosie
 Password: 1f6d38aca39c      a08da4ea959e
+id movie 1132
 
 am ales sa scriu in C pentru ca cel putin acum la inceput nu cred ca o sa am nevoie de vreo structura sau ceva din STL ce ar trebui eu sa implementez de mana in C => folosesc parson in json parsing, celalata biblioteca e de C++
 
