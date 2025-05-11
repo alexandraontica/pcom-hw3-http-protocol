@@ -10,8 +10,8 @@
 #include "parson.h"
 
 int num_cookies = 0;
-char cookies[MAX_LEN][MAX_BODY_LEN];
-char token[MAX_BODY_LEN];
+char cookies[MAX_SHORT_LEN][MAX_LONG_LEN];
+char token[MAX_LONG_LEN];
 
 void login_admin(char *username, char *password) 
 {
@@ -21,7 +21,7 @@ void login_admin(char *username, char *password)
     json_object_set_string(root_obj, "password", password);
     char *body_str = json_serialize_to_string(root_val);
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGIN_ADMIN_URL);
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
@@ -82,7 +82,7 @@ void add_user(char *username, char *password)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_USER_URL);
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
@@ -123,7 +123,7 @@ void get_users()
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_USERS_URL);
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
@@ -149,9 +149,10 @@ void get_users()
 
             for (int i = 0; i < array_size; i++) {
                 JSON_Object *user_obj = json_array_get_object(users_array, i);
+                int id = (int)json_object_get_number(user_obj, "id");
                 const char *username = json_object_get_string(user_obj, "username");
                 const char *password = json_object_get_string(user_obj, "password");
-                printf("#%d %s:%s\n", i + 1, username, password);
+                printf("#%d %s:%s\n", id, username, password);
             }
         } else if (!strncmp(status, "40", 2)) {
             const char *error_message = json_object_get_string(root_obj, "error");
@@ -177,7 +178,7 @@ void delete_user(char *username)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_USER_URL);
     strcat(url, "/");
@@ -218,7 +219,7 @@ void logout_admin()
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_ADMIN_URL);
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
@@ -270,7 +271,7 @@ void login(char *admin_username, char *username, char *password)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGIN_URL);
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
@@ -324,7 +325,7 @@ void logout() {
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_URL);
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
@@ -372,7 +373,7 @@ void get_access()
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_ACCESS_URL);
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
@@ -417,7 +418,7 @@ void get_movies()
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_MOVIES_URL);
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
@@ -443,8 +444,8 @@ void get_movies()
             for (int i = 0; i < array_size; i++) {
                 JSON_Object *user_obj = json_array_get_object(users_array, i);
                 const char *title = json_object_get_string(user_obj, "title");
-                // int id = (int)json_object_get_number(user_obj, "id");
-                printf("#%d %s\n", i + 1, title);
+                int id = (int)json_object_get_number(user_obj, "id");
+                printf("#%d %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
             const char *error_message = json_object_get_string(root_obj, "error");
@@ -470,7 +471,7 @@ void get_movie(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_MOVIE_URL);
     strcat(url, "/");
@@ -547,7 +548,7 @@ void add_movie(char *title, int year, char *description, double rating)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_MOVIE_URL);
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
@@ -588,7 +589,7 @@ void delete_movie(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_MOVIE_URL);
     strcat(url, "/");
@@ -637,7 +638,7 @@ void update_movie(char *id, char *title, int year, char *description, double rat
         cookie_ptrs[i] = cookies[i];
     }
 
-    char url[MAX_BODY_LEN];
+    char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, UPDATE_MOVIE_URL);
     strcat(url, "/");
@@ -671,4 +672,57 @@ void update_movie(char *id, char *title, int year, char *description, double rat
     free(message);
     free(response);
     free(body_str);
+}
+
+void get_collections() 
+{
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LONG_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, GET_COLLECTIONS_URL);
+    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    char *json = strstr(response, "{");  // find the start of the JSON object
+    if (json) {
+        JSON_Value *root_value = json_parse_string(json);
+        JSON_Object *root_obj = json_value_get_object(root_value);
+
+        if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+            printf("SUCCESS: Lista colecțiilor\n");
+  
+            JSON_Array *users_array = json_object_get_array(root_obj, "collections");
+            int array_size = json_array_get_count(users_array);
+
+            for (int i = 0; i < array_size; i++) {
+                JSON_Object *user_obj = json_array_get_object(users_array, i);
+                const char *title = json_object_get_string(user_obj, "title");
+                int id = (int)json_object_get_number(user_obj, "id");
+                printf("#%d: %s\n", id, title);
+            }
+        } else if (!strncmp(status, "40", 2)) {
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+        } else {
+            printf("unknown error - status: %s\n", status);
+        }
+    
+        json_value_free(root_value);
+    } else {
+        printf("ERROR: Invalid or no JSON response\n");
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
 }

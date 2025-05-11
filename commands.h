@@ -1,8 +1,8 @@
 #ifndef __COMMANDS__
 #define __COMMANDS__
 
-#define MAX_LEN 50
-#define MAX_BODY_LEN 500
+#define MAX_SHORT_LEN 50
+#define MAX_LONG_LEN 500
 #define HOST "63.32.125.183"
 #define PORT 8081
 #define CONTENT_TYPE "application/json"
@@ -20,6 +20,7 @@
 #define ADD_MOVIE_URL GET_MOVIES_URL
 #define DELETE_MOVIE_URL GET_MOVIES_URL
 #define UPDATE_MOVIE_URL GET_MOVIES_URL
+#define GET_COLLECTIONS_URL "/library/collections"
 
 void login_admin(char *username, char *password);
 void add_user(char *username, char *password);
@@ -34,5 +35,6 @@ void get_movie(char *id);
 void add_movie(char *title, int year, char *description, double rating);
 void delete_movie(char *id);
 void update_movie(char *id, char *title, int year, char *description, double rating);
+void get_collections();
 
 #endif // __COMMANDS__
