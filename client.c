@@ -37,9 +37,13 @@ int main()
         } else if (!strncmp(command, "get_users", 9)) {
             get_users();
         } else if (!strncmp(command, "delete_user", 11)) {
-            //
+            printf("username=");
+            char username[MAX_LEN];
+            scanf("%s", username);
+
+            delete_user(username);
         } else if (!strncmp(command, "logout_admin", 12)) {
-            //
+            logout_admin();
         } else if (!strncmp(command, "login", 5)) {
             //
         } else if (!strncmp(command, "get_access", 10)) {
@@ -69,7 +73,7 @@ int main()
         } else if (!strncmp(command, "logout", 6)) {
             //
         } else if (!strncmp(command, "exit", 4)) {
-            return 0;
+            break;
         }
     }
 
