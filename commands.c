@@ -542,8 +542,6 @@ void add_movies(char *title, int year, char *description, double rating)
     json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);
     char *body_str = json_serialize_to_string(root_val);
 
-    printf("body_str: %s\n", body_str);
-
     char *cookie_ptrs[num_cookies];
     for (int i = 0; i < num_cookies; i++) {
         cookie_ptrs[i] = cookies[i];

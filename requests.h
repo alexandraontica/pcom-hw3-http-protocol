@@ -14,4 +14,8 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
 char *compute_delete_request(char *host, char *url, char **cookies, 
 	                         int cookies_count, char *token);
 
+// computes and returns a PUT request string (cookies and token can be NULL if not needed)
+char *compute_put_request(char *host, char *url, char* content_type, char **body_data,
+						  char** cookies, int cookies_count, char *token);
+
 #endif

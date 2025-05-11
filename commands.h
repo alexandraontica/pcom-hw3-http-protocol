@@ -19,6 +19,7 @@
 #define GET_MOVIE_URL GET_MOVIES_URL
 #define ADD_MOVIE_URL GET_MOVIES_URL
 #define DELETE_MOVIE_URL GET_MOVIES_URL
+#define UPDATE_MOVIE_URL GET_MOVIES_URL
 
 void login_admin(char *username, char *password);
 void add_user(char *username, char *password);

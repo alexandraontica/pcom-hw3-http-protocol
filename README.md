@@ -12,3 +12,5 @@ comentarii in engleza pentru consistency (asa erau in fisierele din lab)
 ruta de get e exact ca il lab + am adaugat tokenul pt authorisation + headerul la mesaj
 
 ruta de post: am scos body data count sau whatever, ii dau ca data direct jsonul sa il trimit; am adaugat headerul cu tokenul
+
+put request e exact la fel ca post
