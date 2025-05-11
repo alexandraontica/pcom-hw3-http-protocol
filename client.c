@@ -61,9 +61,13 @@ int main()
         } else if (!strncmp(command, "get_access", 10)) {
             get_access();
         } else if (!strncmp(command, "get_movies", 10)) {
-            //
+            get_movies();
         } else if (!strncmp(command, "get_movie", 9)) {
-            //
+            printf("id=");
+            char id[MAX_LEN];
+            scanf("%s", id);
+
+            get_movie(id);
         } else if (!strncmp(command, "add_movie", 9)) {
             //
         } else if (!strncmp(command, "delete_movie", 12)) {
@@ -83,9 +87,11 @@ int main()
         } else if (!strncmp(command, "delete_movie_from_collection", 28)) {
             //
         } else if (!strncmp(command, "logout", 6)) {
-            //
+            logout();
         } else if (!strncmp(command, "exit", 4)) {
             break;
+        } else {
+            printf("invalid command\n");
         }
     }
 
