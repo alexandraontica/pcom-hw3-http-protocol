@@ -86,7 +86,11 @@ int main()
 
             add_movies(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie", 12)) {
-            //
+            printf("id=");
+            char id[MAX_LEN];
+            scanf("%s", id);
+
+            delete_movie(id);
         } else if (!strncmp(command, "update_movie", 12)) {
             //
         } else if (!strncmp(command, "get_collections", 15)) {

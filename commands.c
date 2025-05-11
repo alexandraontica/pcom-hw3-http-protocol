@@ -582,3 +582,44 @@ void add_movies(char *title, int year, char *description, double rating)
     free(response);
     free(body_str);
 }
+
+void delete_movie(char *id)
+{
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_BODY_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, DELETE_MOVIE_URL);
+    strcat(url, "/");
+    strcat(url, id);
+    char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+        printf("SUCCESS: Film șters cu succes\n");
+    } else if (!strncmp(status, "40", 2)) {
+        char *json = strstr(response, "{");  // find the start of the JSON object
+        if (json) {
+            JSON_Value *root_value = json_parse_string(json);
+            JSON_Object *root_obj = json_value_get_object(root_value);
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+            json_value_free(root_value);
+        }
+    } else {
+        printf("unknown error - status: %s\n", status);
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+}

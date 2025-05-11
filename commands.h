@@ -18,6 +18,7 @@
 #define GET_MOVIES_URL "/library/movies"
 #define GET_MOVIE_URL GET_MOVIES_URL
 #define ADD_MOVIE_URL GET_MOVIES_URL
+#define DELETE_MOVIE_URL GET_MOVIES_URL
 
 void login_admin(char *username, char *password);
 void add_user(char *username, char *password);
@@ -30,5 +31,6 @@ void get_access();
 void get_movies();
 void get_movie(char *id);
 void add_movies(char *title, int year, char *description, double rating);
+void delete_movie(char *id);
 
 #endif // __COMMANDS__
