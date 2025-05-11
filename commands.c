@@ -10,6 +10,7 @@
 
 int num_cookies = 0;
 char cookies[MAX_LEN][MAX_BODY_LEN];
+char token[MAX_BODY_LEN];
 
 void login_admin(char *username, char *password) 
 {
@@ -17,7 +18,7 @@ void login_admin(char *username, char *password)
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "username", username);
     json_object_set_string(root_obj, "password", password);
-    char *body_str = json_serialize_to_string(root_val); 
+    char *body_str = json_serialize_to_string(root_val);
 
     char url[MAX_LEN];
     strcpy(url, BASE_URL);
@@ -143,8 +144,8 @@ void get_users()
 
             for (int i = 0; i < array_size; i++) {
                 JSON_Object *user_obj = json_array_get_object(users_array, i);
-                char *username = (char *)json_object_get_string(user_obj, "username");
-                char *password = (char *)json_object_get_string(user_obj, "password");
+                const char *username = json_object_get_string(user_obj, "username");
+                const char *password = json_object_get_string(user_obj, "password");
                 printf("#%d %s:%s\n", i + 1, username, password);
             }
         }
@@ -243,4 +244,107 @@ void logout_admin()
     free(response);
 }
 
+void login(char *admin_username, char *username, char *password)
+{
+    // TODO: do i need this?
+    if (num_cookies > 0) {
+        // a user is already logged in
+        printf("ERROR: sunteti deja autentificat\n");
+        return;
+    }
 
+    JSON_Value  *root_val = json_value_init_object();
+    JSON_Object *root_obj = json_value_get_object(root_val);
+    json_object_set_string(root_obj, "admin_username", admin_username);
+    json_object_set_string(root_obj, "username", username);
+    json_object_set_string(root_obj, "password", password);
+    char *body_str = json_serialize_to_string(root_val);
+
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, LOGIN_URL);
+    char *message = compute_post_request(HOST, url, CONTENT_TYPE,
+        &body_str, cookie_ptrs, num_cookies, NULL);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[3];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+
+    if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+        printf("SUCCESS: Autentificare reușită\n");
+    } else if (!strncmp(status, "40", 2)) {
+        char *json = strstr(response, "{");  // find the start of the JSON object
+        if (json) {
+            JSON_Value *root_value = json_parse_string(json);
+            JSON_Object *root_obj = json_value_get_object(root_value);
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+            json_value_free(root_value);
+        }
+    } else {
+        printf("unknown error - status: %s\n", status);
+    }
+
+    char *cookie = strstr(response, "Set-Cookie: ");
+    if (cookie) {
+        cookie += strlen("Set-Cookie: ");
+        char *end = strstr(cookie, ";");
+        if (end) {
+            *end = '\0';
+        }
+    }
+
+    if (cookie) {
+        strcpy(cookies[num_cookies], cookie);
+        num_cookies++;
+    }
+}
+
+void get_access()
+{
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, GET_ACCESS_URL);
+    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[3];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+
+    char *json = strstr(response, "{");  // find the start of the JSON object
+    if (json) {
+        JSON_Value *root_value = json_parse_string(json);
+        JSON_Object *root_obj = json_value_get_object(root_value);
+
+        if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+            printf("SUCCESS: Token JWT primit\n");
+            const char *user_token = json_object_get_string(root_obj, "token");
+            strcpy(token, user_token);
+        } else if (!strncmp(status, "40", 2)) {
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+        } else {
+            printf("unknown error - status: %s\n", status);
+        }
+    
+        json_value_free(root_value);
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+}

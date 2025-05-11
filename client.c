@@ -45,9 +45,21 @@ int main()
         } else if (!strncmp(command, "logout_admin", 12)) {
             logout_admin();
         } else if (!strncmp(command, "login", 5)) {
-            //
+            printf("admin_username=");
+            char admin_username[MAX_LEN];
+            scanf("%s", admin_username);
+
+            printf("username=");
+            char username[MAX_LEN];
+            scanf("%s", username);
+
+            printf("password=");
+            char password[MAX_LEN];
+            scanf("%s", password);
+
+            login(admin_username, username, password);
         } else if (!strncmp(command, "get_access", 10)) {
-            //
+            get_access();
         } else if (!strncmp(command, "get_movies", 10)) {
             //
         } else if (!strncmp(command, "get_movie", 9)) {

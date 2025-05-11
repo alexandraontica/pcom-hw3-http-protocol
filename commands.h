@@ -12,11 +12,15 @@
 #define GET_USERS_URL ADD_USER_URL
 #define DELETE_USER_URL ADD_USER_URL
 #define LOGOUT_ADMIN_URL "/admin/logout"
+#define LOGIN_URL "/user/login"
+#define GET_ACCESS_URL "/library/access"
 
 void login_admin(char *username, char *password);
 void add_user(char *username, char *password);
 void get_users();
 void delete_user(char *username);
 void logout_admin();
+void login(char *admin_username, char *username, char *password);
+void get_access();
 
 #endif // __COMMANDS__
