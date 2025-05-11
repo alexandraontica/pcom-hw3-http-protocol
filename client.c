@@ -120,21 +120,49 @@ int main()
         } else if (!strncmp(command, "get_collections", 15)) {
             get_collections();
         } else if (!strncmp(command, "get_collection", 14)) {
-            //
+            printf("id=");
+            char id[MAX_SHORT_LEN];
+            scanf("%s", id);
+
+            get_collection(id);
         } else if (!strncmp(command, "add_collection", 14)) {
-            //
+            printf("title=");
+            char title[MAX_SHORT_LEN];
+            getchar();
+            fgets(title, MAX_SHORT_LEN, stdin);           
+            title[strcspn(title, "\n")] = '\0';
+
+            int num_movies;
+            printf("num_movies=");
+            scanf("%d", &num_movies);
+
+            char *movie_id[num_movies];
+            for (int i = 0; i < num_movies; i++) {
+                printf("movie_id[%d]=", i);
+                movie_id[i] = malloc(MAX_SHORT_LEN);
+                scanf("%s", movie_id[i]);
+                free(movie_id[i]);
+            }
+
+            add_collection(title, num_movies, movie_id);
         } else if (!strncmp(command, "delete_collection", 17)) {
             //
         } else if (!strncmp(command, "add_movie_to_collection", 23)) {
-            //
+            printf("collection_id=");
+            char collection_id[MAX_SHORT_LEN];
+            scanf("%s", collection_id);
+
+            printf("movie_id=");
+            int movie_id;
+            scanf("%d", &movie_id);
+
+            add_movie_to_collection(collection_id, movie_id);
         } else if (!strncmp(command, "delete_movie_from_collection", 28)) {
             //
         } else if (!strncmp(command, "logout", 6)) {
             logout();
         } else if (!strncmp(command, "exit", 4)) {
             break;
-        } else {
-            printf("invalid command\n");
         }
     }
 

@@ -21,6 +21,10 @@
 #define DELETE_MOVIE_URL GET_MOVIES_URL
 #define UPDATE_MOVIE_URL GET_MOVIES_URL
 #define GET_COLLECTIONS_URL "/library/collections"
+#define GET_COLLECTION_URL GET_COLLECTIONS_URL
+#define ADD_COLLECTION_URL GET_COLLECTIONS_URL
+#define ADD_MOVIE_TO_COLLECTION_FIRST_URL GET_COLLECTIONS_URL
+#define ADD_MOVIE_TO_COLLECTION_SECOND_URL "/movies"
 
 void login_admin(char *username, char *password);
 void add_user(char *username, char *password);
@@ -36,5 +40,10 @@ void add_movie(char *title, int year, char *description, double rating);
 void delete_movie(char *id);
 void update_movie(char *id, char *title, int year, char *description, double rating);
 void get_collections();
+void get_collection(char *id);
+int add_empty_collection(char *title, int *id);
+int add_movie_to_collection_aux(char *collection_id, int movie_id);
+void add_collection(char *title, int num_movies, char *movie_id[]);
+void add_movie_to_collection(char *collection_id, int movie_id);
 
 #endif // __COMMANDS__

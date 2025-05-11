@@ -239,6 +239,8 @@ void logout_admin()
             memset(cookies[i], 0, sizeof(cookies[i]));
         }
         num_cookies = 0;
+
+        memset(token, 0, sizeof(token));
     } else if (!strncmp(status, "40", 2)) {
         char *json = strstr(response, "{");  // find the start of the JSON object
         if (json) {
@@ -502,11 +504,9 @@ void get_movie(char *id)
             JSON_Value *r_val = json_object_get_value(root_obj, "rating");
             if (json_value_get_type(r_val) == JSONNumber) {
                 rating = json_value_get_number(r_val);
-                printf("rating = %.1f\n", rating);
             } else if (json_value_get_type(r_val) == JSONString) {
                 const char *s = json_value_get_string(r_val);
                 rating = atof(s);
-                printf("rating = %.1f (parsed from string)\n", rating);
             }
 
             printf("{\n"
@@ -725,4 +725,195 @@ void get_collections()
     close_connection(sockfd);
     free(message);
     free(response);
+}
+
+void get_collection(char *id)
+{
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LONG_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, GET_COLLECTION_URL);
+    strcat(url, "/");
+    strcat(url, id);
+    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    char *json = strstr(response, "{");  // find the start of the JSON object
+    if (json) {
+        JSON_Value *root_value = json_parse_string(json);
+        JSON_Object *root_obj = json_value_get_object(root_value);
+
+        if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+            printf("SUCCESS: Detalii colecție\n");
+  
+            JSON_Array *users_array = json_object_get_array(root_obj, "movies");
+            int array_size = json_array_get_count(users_array);
+
+            const char *title = json_object_get_string(root_obj, "title");
+            const char *owner = json_object_get_string(root_obj, "owner");
+
+            printf("title: %s\n", title);
+            printf("owner: %s\n", owner);
+
+            for (int i = 0; i < array_size; i++) {
+                JSON_Object *user_obj = json_array_get_object(users_array, i);
+                const char *title = json_object_get_string(user_obj, "title");
+                int id = (int)json_object_get_number(user_obj, "id");
+                printf("#%d: %s\n", id, title);
+            }
+        } else if (!strncmp(status, "40", 2)) {
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+        } else {
+            printf("unknown error - status: %s\n", status);
+        }
+    
+        json_value_free(root_value);
+    } else {
+        printf("ERROR: Invalid or no JSON response\n");
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+}
+
+int add_empty_collection(char *title, int *id)
+{
+    JSON_Value  *root_val = json_value_init_object();
+    JSON_Object *root_obj = json_value_get_object(root_val);
+    json_object_set_string(root_obj, "title", title);
+    char *body_str = json_serialize_to_string(root_val);
+
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LONG_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, ADD_COLLECTION_URL);
+    char *message = compute_post_request(HOST, url, CONTENT_TYPE,
+        &body_str, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    char *json = strstr(response, "{");  // find the start of the JSON object
+    if (json) {
+        JSON_Value *root_value = json_parse_string(json);
+        JSON_Object *root_obj = json_value_get_object(root_value);
+
+        if (!strncmp(status, "20", 2)) {
+            *id = (int)json_object_get_number(root_obj, "id");
+        } else if (!strncmp(status, "40", 2)) {
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);    
+        } else {
+            printf("unknown error - status: %s\n", status);
+        }
+        
+        json_value_free(root_value);
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+    free(body_str);
+
+    return atoi(status);
+}
+
+int add_movie_to_collection_aux(char *collection_id, int movie_id) {
+    JSON_Value  *root_val = json_value_init_object();
+    JSON_Object *root_obj = json_value_get_object(root_val);
+    json_object_set_number(root_obj, "id", movie_id);
+    char *body_str = json_serialize_to_string(root_val);
+
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_LONG_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, ADD_MOVIE_TO_COLLECTION_FIRST_URL);
+    strcat(url, "/");
+    strcat(url, collection_id);
+    strcat(url, ADD_MOVIE_TO_COLLECTION_SECOND_URL);
+    char *message = compute_post_request(HOST, url, CONTENT_TYPE,
+        &body_str, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    if (!strncmp(status, "40", 2)) {
+        char *json = strstr(response, "{");  // find the start of the JSON object
+        if (json) {
+            JSON_Value *root_value = json_parse_string(json);
+            JSON_Object *root_obj = json_value_get_object(root_value);
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+            json_value_free(root_value);
+        }
+    } else {
+        printf("unknown error - status: %s\n", status);
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+    free(body_str);
+
+   return atoi(status);
+}
+
+void add_collection(char *title, int num_movies, char *movie_id[])
+{
+    int id;
+    int status = add_empty_collection(title, &id);
+
+    if (status >= 400) {
+        return;
+    }
+
+    char id_str[MAX_SHORT_LEN];
+    sprintf(id_str, "%d", id);
+
+    for (int i = 0; i < num_movies; i++) {
+        status = add_movie_to_collection_aux(id_str, atoi(movie_id[i]));
+
+        if (status >= 400) {
+            return;
+        }
+    }
+
+    get_collection(id_str);
+}
+
+void add_movie_to_collection(char *collection_id, int movie_id)
+{
+    int status = add_movie_to_collection_aux(collection_id, movie_id);
+    
+    if (status >= 200 && status <= 210) {
+        printf("SUCCESS: Film adăugat în colecție\n");
+    }
 }
