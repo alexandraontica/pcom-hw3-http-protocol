@@ -84,7 +84,7 @@ int main()
             double rating;
             scanf("%lf", &rating);
 
-            add_movies(title, year, description, rating);
+            add_movie(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie", 12)) {
             printf("id=");
             char id[MAX_LEN];
@@ -92,7 +92,31 @@ int main()
 
             delete_movie(id);
         } else if (!strncmp(command, "update_movie", 12)) {
-            //
+            printf("id=");
+            char id[MAX_LEN];
+            scanf("%s", id);
+
+            printf("title=");
+            char title[MAX_LEN];
+            getchar();
+            fgets(title, MAX_LEN, stdin);           
+            title[strcspn(title, "\n")] = '\0';
+
+            printf("year=");
+            int year;
+            scanf("%d", &year);
+
+            printf("description=");
+            char description[MAX_LEN];
+            getchar();
+            fgets(description, MAX_LEN, stdin);           
+            description[strcspn(description, "\n")] = '\0';
+
+            printf("rating=");
+            double rating;
+            scanf("%lf", &rating);
+
+            update_movie(id, title, year, description, rating);
         } else if (!strncmp(command, "get_collections", 15)) {
             //
         } else if (!strncmp(command, "get_collection", 14)) {

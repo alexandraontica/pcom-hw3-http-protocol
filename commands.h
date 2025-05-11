@@ -31,7 +31,8 @@ void logout();
 void get_access();
 void get_movies();
 void get_movie(char *id);
-void add_movies(char *title, int year, char *description, double rating);
+void add_movie(char *title, int year, char *description, double rating);
 void delete_movie(char *id);
+void update_movie(char *id, char *title, int year, char *description, double rating);
 
 #endif // __COMMANDS__

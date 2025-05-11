@@ -532,7 +532,7 @@ void get_movie(char *id)
     free(response);
 }
 
-void add_movies(char *title, int year, char *description, double rating)
+void add_movie(char *title, int year, char *description, double rating)
 {
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
@@ -620,4 +620,55 @@ void delete_movie(char *id)
     close_connection(sockfd);
     free(message);
     free(response);
+}
+
+void update_movie(char *id, char *title, int year, char *description, double rating)
+{
+    JSON_Value  *root_val = json_value_init_object();
+    JSON_Object *root_obj = json_value_get_object(root_val);
+    json_object_set_string(root_obj, "title", title);
+    json_object_set_number(root_obj, "year", year);
+    json_object_set_string(root_obj, "description", description);
+    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);
+    char *body_str = json_serialize_to_string(root_val);
+
+    char *cookie_ptrs[num_cookies];
+    for (int i = 0; i < num_cookies; i++) {
+        cookie_ptrs[i] = cookies[i];
+    }
+
+    char url[MAX_BODY_LEN];
+    strcpy(url, BASE_URL);
+    strcat(url, UPDATE_MOVIE_URL);
+    strcat(url, "/");
+    strcat(url, id);
+    char *message = compute_put_request(HOST, url, CONTENT_TYPE,
+        &body_str, cookie_ptrs, num_cookies, token);
+    int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
+    send_to_server(sockfd, message);
+    char *response = receive_from_server(sockfd);
+
+    char status[4];
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';
+
+    if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
+        printf("SUCCESS: Film actualizat\n");
+    } else if (!strncmp(status, "40", 2)) {
+        char *json = strstr(response, "{");  // find the start of the JSON object
+        if (json) {
+            JSON_Value *root_value = json_parse_string(json);
+            JSON_Object *root_obj = json_value_get_object(root_value);
+            const char *error_message = json_object_get_string(root_obj, "error");
+            printf("ERROR: %s\n", error_message);
+            json_value_free(root_value);
+        }
+    } else {
+        printf("unknown error - status: %s\n", status);
+    }
+
+    close_connection(sockfd);
+    free(message);
+    free(response);
+    free(body_str);
 }
