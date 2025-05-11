@@ -3,7 +3,7 @@
 VENV = .venv
 VENV_PYTHON3 = $(VENV)/bin/python3
 
-ADMIN ?= test:testpass
+ADMIN ?= alexandra.ontica:1f6d38aca39c
 PROGRAM ?= ../client
 
 all: venv deps

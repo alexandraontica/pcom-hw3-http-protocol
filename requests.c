@@ -10,7 +10,7 @@
 #include "requests.h"
 
 char *compute_get_request(char *host, char *url, char *query_params,
-                            char **cookies, int cookies_count, char *token)
+                          char **cookies, int cookies_count, char *token)
 {
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
@@ -34,8 +34,9 @@ char *compute_get_request(char *host, char *url, char *query_params,
         compute_message(message, line);
     }
 
-    if (cookies) {
+    if (cookies && cookies_count > 0) {
         strcat(message, "Cookie: ");
+        
         for (int i = 0; i < cookies_count; i++) {
             strcat(message, cookies[i]);
             if (i != cookies_count - 1) {
@@ -44,6 +45,7 @@ char *compute_get_request(char *host, char *url, char *query_params,
         }
         strcat(message, "\r\n");
     }
+
     // Step 4: add final new line
     compute_message(message, "");
     return message;
@@ -78,8 +80,9 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
     }
 
     // Step 4 (optional): add cookies
-    if (cookies) {
+    if (cookies && cookies_count > 0) {
         strcat(message, "Cookie: ");
+        
         for (int i = 0; i < cookies_count; i++) {
             strcat(message, cookies[i]);
             if (i != cookies_count - 1) {
@@ -88,12 +91,48 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
         }
         strcat(message, "\r\n");
     }
+    
     // Step 5: add new line at end of header
     compute_message(message, "");
 
     // Step 6: add the actual payload data
     memset(line, 0, LINELEN);
     strcat(message, *body_data);
+
+    free(line);
+    return message;
+}
+
+char *compute_delete_request(char *host, char *url, char **cookies, 
+                             int cookies_count, char *token)
+{
+    char *message = calloc(BUFLEN, sizeof(char));
+    char *line    = calloc(LINELEN, sizeof(char));
+
+    sprintf(line, "DELETE %s HTTP/1.1", url);
+    compute_message(message, line);
+
+    sprintf(line, "Host: %s", host);
+    compute_message(message, line);
+
+    if (token) {
+        sprintf(line, "Authorization: Bearer %s", token);
+        compute_message(message, line);
+    }
+
+    if (cookies && cookies_count > 0) {
+        strcat(message, "Cookie: ");
+        
+        for (int i = 0; i < cookies_count; i++) {
+            strcat(message, cookies[i]);
+            if (i != cookies_count - 1) {
+                strcat(message, "; ");
+            }
+        }
+        strcat(message, "\r\n");
+    }
+
+    compute_message(message, "");
 
     free(line);
     return message;
