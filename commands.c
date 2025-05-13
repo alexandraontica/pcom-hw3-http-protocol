@@ -13,6 +13,14 @@ int num_cookies = 0;
 char cookies[MAX_SHORT_LEN][MAX_LONG_LEN];
 char token[MAX_LONG_LEN];
 
+int cmp_obj_by_id(const void *json_obj_a, const void *json_obj_b) {
+    JSON_Object *a = *(JSON_Object**)json_obj_a;
+    JSON_Object *b = *(JSON_Object**)json_obj_b;
+    int id_a = (int)json_object_get_number(a, "id");
+    int id_b = (int)json_object_get_number(b, "id");
+    return id_a - id_b;
+}
+
 void login_admin(char *username, char *password) 
 {
     // build the JSON I will send to the server
@@ -478,11 +486,19 @@ void get_movies()
             JSON_Array *movies_array = json_object_get_array(root_obj, "movies");
             int array_size = json_array_get_count(movies_array);
 
-            // go through the array I received to print the movies
+            JSON_Object *movies_list[array_size];
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *movie_obj = json_array_get_object(movies_array, i);
-                const char *title = json_object_get_string(movie_obj, "title");
+                movies_list[i] = json_array_get_object(movies_array, i);
+            }
+
+            // sort the movies by id
+            qsort(movies_list, array_size, sizeof(JSON_Object*), cmp_obj_by_id);
+
+            // go through the array to print the movies
+            for (int i = 0; i < array_size; i++) {
+                JSON_Object *movie_obj = movies_list[i];
                 int id = (int)json_object_get_number(movie_obj, "id");
+                const char  *title = json_object_get_string(movie_obj, "title");
                 printf("#%d %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
@@ -580,7 +596,7 @@ void add_movie(char *title, int year, char *description, double rating)
     json_object_set_string(root_obj, "title", title);
     json_object_set_number(root_obj, "year", year);
     json_object_set_string(root_obj, "description", description);
-    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);  // round to 1 decimal because I saw that 6.6 reached the server as 6.5999999...
+    json_object_set_number(root_obj, "rating", rating);
     char *body_str = json_serialize_to_string(root_val);
 
     char *cookie_ptrs[num_cookies];
@@ -677,7 +693,7 @@ void update_movie(char *id, char *title, int year, char *description, double rat
     json_object_set_string(root_obj, "title", title);
     json_object_set_number(root_obj, "year", year);
     json_object_set_string(root_obj, "description", description);
-    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);  // round to 1 decimal here as well
+    json_object_set_number(root_obj, "rating", rating);
     char *body_str = json_serialize_to_string(root_val);
 
     char *cookie_ptrs[num_cookies];
@@ -757,11 +773,19 @@ void get_collections()
             JSON_Array *collections_array = json_object_get_array(root_obj, "collections");
             int array_size = json_array_get_count(collections_array);
 
-            // go through the array I received to print the collections
+            JSON_Object *collections_list[array_size];
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *collection_obj = json_array_get_object(collections_array, i);
-                const char *title = json_object_get_string(collection_obj, "title");
-                int id = (int)json_object_get_number(collection_obj, "id");
+                collections_list[i] = json_array_get_object(collections_array, i);
+            }
+            
+            // sort the collections by id
+            qsort(collections_list, array_size, sizeof(JSON_Object*), cmp_obj_by_id);
+
+            // go through the array to print the collections
+            for (int i = 0; i < array_size; i++) {
+                JSON_Object *col = collections_list[i];
+                int id  = (int)json_object_get_number(col, "id");
+                const char  *title = json_object_get_string(col, "title");
                 printf("#%d: %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
@@ -822,11 +846,19 @@ void get_collection(char *id)
             printf("title: %s\n", title);
             printf("owner: %s\n", owner);
 
-            // go through the array I received to print the movies
+            JSON_Object *movies_list[array_size];
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *movie_obj = json_array_get_object(movies_array, i);
-                const char *title = json_object_get_string(movie_obj, "title");
-                int id = (int)json_object_get_number(movie_obj, "id");
+                movies_list[i] = json_array_get_object(movies_array, i);
+            }
+
+            // sort the movies by id
+            qsort(movies_list, array_size, sizeof(JSON_Object*), cmp_obj_by_id);
+
+            // go through the array to print the movies
+            for (int i = 0; i < array_size; i++) {
+                JSON_Object *m = movies_list[i];
+                int id = (int)json_object_get_number(m, "id");
+                const char  *title = json_object_get_string(m, "title");
                 printf("#%d: %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {

@@ -22,8 +22,15 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
 - trimit mesajul catre server
 - astept raspunsul serverului
 - extrag statusul raspunsului (200, 403 etc.)
-- in functie de status, afisez fie "success" urmat de alte date necesare (in principal la GET am nevoie sa afisez si alte informatii), fie "error", urmat de eroarea primita de la server (extrasa din JSONul primit ca raspuns)
-- (optinal) in caz de succes, extrag datele utile din JSONul de raspuns si le salvez/afisez (ex: token, id-ul unei colectii nou create, toti userii etc.)
+- verific statusul:
+    - in caz de succes: 
+        - afisez mesaj de succes
+        - (optional) extrag datele utile din JSONul de raspuns si le salvez (ex: token, id-ul unei colectii nou create, etc.)
+        - (optional) afisez alte informatii cerute de task (de ex. informatii despre film etc.)
+        - (optional) daca am de afisat o lista, o sortez mai intai crescator dupa `id` (**vezi sectiunea "Probleme"**)
+    - in caz de eroare:
+        - extrag eroarea din JSONul primit
+        - afisez eroarea
 - (optional) adaug cookie-urile primite in vectorul de cookies
 - clean up: eliberez memoria alocata dinamic si inchid conexiunea
 
@@ -43,8 +50,31 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
 - la **add_movie_to_collection** folosesc functia auxiliara pe care am folosit-o si la **add_collection**
 
 ### Probleme 
-Pe langa toate probleme semnalate pe forum legate de server (caruia ii dadeam toti DoS la cate requesturi trimiteam si normal ca nu mergea mereu), am avut probleme si cu timeout-ul din checker. Acesta era cam mic, 1s, tinand cont ca reply-urile la requesturi veneau foarte greu. De cele mai multe ori checkul trimitea requesturi noi fara sa primeasca reply la requestul vechi si din cauza asta considera testele picate desi replyul venea corect ulterior. Daca cresateam acest timeout la 3-5s totul era ok.
+#### 1
+Pe langa toate probleme semnalate pe forum legate de server (caruia ii dadeam toti DoS la cate requesturi trimiteam si normal ca nu mergea mereu), am avut probleme si cu timeout-ul din checker. Acesta este cam mic, 1s, tinand cont ca reply-urile la requesturi vin destul de greu cand serverul e ocupat. De cele mai multe ori checkul trimitea requesturi noi fara sa primeasca reply la requestul vechi si din cauza asta considera testele picate desi reply-ul venea corect ulterior. Daca cresc acest timeout la 3-5s imi trec toate testele.
 
-Problema aceasta se vedea cel mai clar la colectii (am semnalat si pe forum problema). Din acest motiv am incetat la **add_collection** sa mai afisez si detaliile despre colectia adaugata (s-a scris pe forum ca este ok asa) si afisez doar mesaj de succes. Sper ca nu se depunteaza. La timeout mai mare de o secunda merge mereu si cu toate detaliile afisate, la timeout mic am erori.
+Problema aceasta se vedea cel mai clar la colectii (am semnalat si pe forum problema). Din acest motiv am incetat la **add_collection** sa mai afisez si detaliile despre colectia adaugata (s-a scris pe forum ca este ok asa) si afisez doar mesaj de succes. Sper ca nu se depuncteaza. La timeout mai mare de o secunda merge mereu si cu toate detaliile afisate, la timeout mic am erori, nu apuca sa afiseze toate informatiile la timp si interfereza cu testul urmator.
 
-Alte detalii de implementare pe care am considerat ca trebuie sa le explic le-am scris in comentarii.
+#### 2
+O alta problema observata este ca la **get_movies**, **get_collections** si **get_collection**, listele de filme/colectii returnate nu ajung mereu in ordine crescatoare dupa id. O sesiune ar merge asa:
+
+```
+add_movie
+title=film1
+(nu conteaza restul campurilor)
+(raspuns cu succes)
+
+> add_movie
+title=film2
+(...)
+
+> get_movies
+(mesaj succes)
+#1873 film2
+#1872 film1
+```
+
+Acum checkerul va face **get_movie** cu primul id gasit in lista de filme (adica 1873) si va astepta sa primeasca primul film adaugat, ceea ce in exemplul dat nu se intampla => eroare
+
+Acest lucru nu se intampla mereu, uneori trec testele fara probleme, alteori nu.
+Ca sa fiu sigura ca imi trec mereu testele, sortez array-urile pe care le primesc crescator dupa id inainte sa le afisez.
