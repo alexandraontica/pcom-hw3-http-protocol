@@ -15,24 +15,28 @@ char token[MAX_LONG_LEN];
 
 void login_admin(char *username, char *password) 
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "username", username);
     json_object_set_string(root_obj, "password", password);
     char *body_str = json_serialize_to_string(root_val);
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGIN_ADMIN_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, NULL, 0, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
-    strncpy(status, response + strlen("HTTP/1.1 "), 3);
-    status[3] = '\0';
+    strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
+    status[3] = '\0';  // make sure the string is null-terminated
 
     if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
         printf("SUCCESS: Admin autentificat cu succes\n");
@@ -49,7 +53,7 @@ void login_admin(char *username, char *password)
         printf("unknown error - status: %s\n", status);
     }
 
-    char *cookie = strstr(response, "Set-Cookie: ");
+    char *cookie = strstr(response, "Set-Cookie: ");  // extract the cookie from the response
     if (cookie) {
         cookie += strlen("Set-Cookie: ");
         char *end = strstr(cookie, ";");
@@ -58,6 +62,7 @@ void login_admin(char *username, char *password)
         }
     }
 
+    // save the cookie in the cookies array
     if (cookie) {
         strcpy(cookies[num_cookies], cookie);
         num_cookies++;
@@ -71,26 +76,31 @@ void login_admin(char *username, char *password)
 
 void add_user(char *username, char *password)
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "username", username);
     json_object_set_string(root_obj, "password", password);
     char *body_str = json_serialize_to_string(root_val); 
 
+    // create the copy because the original matrix throws error when given as parameter to requests
     char *cookie_ptrs[num_cookies];
     for (int i = 0; i < num_cookies; i++) {
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_USER_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -123,14 +133,17 @@ void get_users()
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_USERS_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -147,6 +160,7 @@ void get_users()
             JSON_Array *users_array = json_object_get_array(root_obj, "users");
             int array_size = json_array_get_count(users_array);
 
+            // go through the array to print the users
             for (int i = 0; i < array_size; i++) {
                 JSON_Object *user_obj = json_array_get_object(users_array, i);
                 int id = (int)json_object_get_number(user_obj, "id");
@@ -178,16 +192,19 @@ void delete_user(char *username)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_USER_URL);
     strcat(url, "/");
     strcat(url, username);
+
     char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -219,14 +236,17 @@ void logout_admin()
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_ADMIN_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -240,6 +260,7 @@ void logout_admin()
         }
         num_cookies = 0;
 
+        // clear the token
         memset(token, 0, sizeof(token));
     } else if (!strncmp(status, "40", 2)) {
         char *json = strstr(response, "{");  // find the start of the JSON object
@@ -261,6 +282,7 @@ void logout_admin()
 
 void login(char *admin_username, char *username, char *password)
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "admin_username", admin_username);
@@ -273,9 +295,11 @@ void login(char *admin_username, char *username, char *password)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL    
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGIN_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
@@ -301,6 +325,7 @@ void login(char *admin_username, char *username, char *password)
         printf("unknown error - status: %s\n", status);
     }
 
+    // extract the cookie from the response
     char *cookie = strstr(response, "Set-Cookie: ");
     if (cookie) {
         cookie += strlen("Set-Cookie: ");
@@ -310,6 +335,7 @@ void login(char *admin_username, char *username, char *password)
         }
     }
 
+    // save the cookie in the cookies array
     if (cookie) {
         strcpy(cookies[num_cookies], cookie);
         num_cookies++;
@@ -327,14 +353,17 @@ void logout() {
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -375,14 +404,17 @@ void get_access()
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_ACCESS_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -420,14 +452,17 @@ void get_movies()
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_MOVIES_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -440,13 +475,14 @@ void get_movies()
         if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
             printf("SUCCESS: Lista filmelor\n");
   
-            JSON_Array *users_array = json_object_get_array(root_obj, "movies");
-            int array_size = json_array_get_count(users_array);
+            JSON_Array *movies_array = json_object_get_array(root_obj, "movies");
+            int array_size = json_array_get_count(movies_array);
 
+            // go through the array I received to print the movies
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *user_obj = json_array_get_object(users_array, i);
-                const char *title = json_object_get_string(user_obj, "title");
-                int id = (int)json_object_get_number(user_obj, "id");
+                JSON_Object *movie_obj = json_array_get_object(movies_array, i);
+                const char *title = json_object_get_string(movie_obj, "title");
+                int id = (int)json_object_get_number(movie_obj, "id");
                 printf("#%d %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
@@ -473,16 +509,19 @@ void get_movie(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_MOVIE_URL);
     strcat(url, "/");
     strcat(url, id);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -497,7 +536,7 @@ void get_movie(char *id)
             int year = (int)json_object_get_number(root_obj, "year");
             const char *description = json_object_get_string(root_obj, "description");
           
-            // when i parsed the rating as a double, i always got 0.0
+            // when I parsed the rating as a double, I always got 0.0
             // so I had to check if it's a string or a number
             // and parse it accordingly
             double rating;
@@ -535,12 +574,13 @@ void get_movie(char *id)
 
 void add_movie(char *title, int year, char *description, double rating)
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "title", title);
     json_object_set_number(root_obj, "year", year);
     json_object_set_string(root_obj, "description", description);
-    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);
+    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);  // round to 1 decimal because I saw that 6.6 reached the server as 6.5999999...
     char *body_str = json_serialize_to_string(root_val);
 
     char *cookie_ptrs[num_cookies];
@@ -548,15 +588,18 @@ void add_movie(char *title, int year, char *description, double rating)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_MOVIE_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -589,16 +632,19 @@ void delete_movie(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_MOVIE_URL);
     strcat(url, "/");
     strcat(url, id);
+
     char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -625,12 +671,13 @@ void delete_movie(char *id)
 
 void update_movie(char *id, char *title, int year, char *description, double rating)
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "title", title);
     json_object_set_number(root_obj, "year", year);
     json_object_set_string(root_obj, "description", description);
-    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);
+    json_object_set_number(root_obj, "rating", round(rating * 10.0) / 10.0);  // round to 1 decimal here as well
     char *body_str = json_serialize_to_string(root_val);
 
     char *cookie_ptrs[num_cookies];
@@ -638,17 +685,20 @@ void update_movie(char *id, char *title, int year, char *description, double rat
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, UPDATE_MOVIE_URL);
     strcat(url, "/");
     strcat(url, id);
+
     char *message = compute_put_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -681,14 +731,17 @@ void get_collections()
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_COLLECTIONS_URL);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -701,13 +754,14 @@ void get_collections()
         if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
             printf("SUCCESS: Lista colecțiilor\n");
   
-            JSON_Array *users_array = json_object_get_array(root_obj, "collections");
-            int array_size = json_array_get_count(users_array);
+            JSON_Array *collections_array = json_object_get_array(root_obj, "collections");
+            int array_size = json_array_get_count(collections_array);
 
+            // go through the array I received to print the collections
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *user_obj = json_array_get_object(users_array, i);
-                const char *title = json_object_get_string(user_obj, "title");
-                int id = (int)json_object_get_number(user_obj, "id");
+                JSON_Object *collection_obj = json_array_get_object(collections_array, i);
+                const char *title = json_object_get_string(collection_obj, "title");
+                int id = (int)json_object_get_number(collection_obj, "id");
                 printf("#%d: %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
@@ -734,16 +788,19 @@ void get_collection(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_COLLECTION_URL);
     strcat(url, "/");
     strcat(url, id);
+
     char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -756,8 +813,8 @@ void get_collection(char *id)
         if (!strncmp(status, "20", 2)) {  // compare with 20 (not 200) bc I can also receive 201 and be correct
             printf("SUCCESS: Detalii colecție\n");
   
-            JSON_Array *users_array = json_object_get_array(root_obj, "movies");
-            int array_size = json_array_get_count(users_array);
+            JSON_Array *movies_array = json_object_get_array(root_obj, "movies");
+            int array_size = json_array_get_count(movies_array);
 
             const char *title = json_object_get_string(root_obj, "title");
             const char *owner = json_object_get_string(root_obj, "owner");
@@ -765,10 +822,11 @@ void get_collection(char *id)
             printf("title: %s\n", title);
             printf("owner: %s\n", owner);
 
+            // go through the array I received to print the movies
             for (int i = 0; i < array_size; i++) {
-                JSON_Object *user_obj = json_array_get_object(users_array, i);
-                const char *title = json_object_get_string(user_obj, "title");
-                int id = (int)json_object_get_number(user_obj, "id");
+                JSON_Object *movie_obj = json_array_get_object(movies_array, i);
+                const char *title = json_object_get_string(movie_obj, "title");
+                int id = (int)json_object_get_number(movie_obj, "id");
                 printf("#%d: %s\n", id, title);
             }
         } else if (!strncmp(status, "40", 2)) {
@@ -790,6 +848,7 @@ void get_collection(char *id)
 
 int add_empty_collection(char *title, int *id)
 {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_string(root_obj, "title", title);
@@ -800,15 +859,18 @@ int add_empty_collection(char *title, int *id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_COLLECTION_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -819,6 +881,8 @@ int add_empty_collection(char *title, int *id)
         JSON_Object *root_obj = json_value_get_object(root_value);
 
         if (!strncmp(status, "20", 2)) {
+            // if no error occures, the request returns the id of the collection created;
+            // I save it because I will need it to add movies to the collection
             *id = (int)json_object_get_number(root_obj, "id");
         } else if (!strncmp(status, "40", 2)) {
             const char *error_message = json_object_get_string(root_obj, "error");
@@ -835,10 +899,12 @@ int add_empty_collection(char *title, int *id)
     free(response);
     free(body_str);
 
+    // return the status code
     return atoi(status);
 }
 
 int add_movie_to_collection_aux(char *collection_id, int movie_id) {
+    // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
     json_object_set_number(root_obj, "id", movie_id);
@@ -849,22 +915,26 @@ int add_movie_to_collection_aux(char *collection_id, int movie_id) {
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, ADD_MOVIE_TO_COLLECTION_FIRST_URL);
     strcat(url, "/");
     strcat(url, collection_id);
     strcat(url, ADD_MOVIE_TO_COLLECTION_SECOND_URL);
+
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
         &body_str, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
 
+    // treat only the error case because I call this functions for 2 different tasks and need different success messages
     if (!strncmp(status, "40", 2)) {
         char *json = strstr(response, "{");  // find the start of the JSON object
         if (json) {
@@ -881,14 +951,18 @@ int add_movie_to_collection_aux(char *collection_id, int movie_id) {
     free(response);
     free(body_str);
 
+    // return the status code
     return atoi(status);
 }
 
 void add_collection(char *title, int num_movies, char *movie_id[])
 {
     int id;
+
+    // create an empty collection and get its id
     int status = add_empty_collection(title, &id);
 
+    // if the collection creation failed, return
     if (status >= 400) {
         return;
     }
@@ -896,21 +970,26 @@ void add_collection(char *title, int num_movies, char *movie_id[])
     char id_str[MAX_SHORT_LEN];
     sprintf(id_str, "%d", id);
 
+    // add the movies to the collection
     for (int i = 0; i < num_movies; i++) {
         status = add_movie_to_collection_aux(id_str, atoi(movie_id[i]));
 
+        // if the movie addition failed, return
         if (status >= 400) {
             return;
         }
     }
 
+    // print the details of the collection (get collection already does that)
     get_collection(id_str);
 }
 
 void add_movie_to_collection(char *collection_id, int movie_id)
 {
+    // add the movie to the collection
     int status = add_movie_to_collection_aux(collection_id, movie_id);
     
+    // print success message (the error message is handled by auxiliary function)
     if (status >= 200 && status <= 210) {
         printf("SUCCESS: Film adăugat în colecție\n");
     }
@@ -923,16 +1002,19 @@ void delete_collection(char *id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_COLLECTION_URL);
     strcat(url, "/");
     strcat(url, id);
+
     char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';
@@ -964,6 +1046,7 @@ void delete_movie_from_collection(char *collection_id, char *movie_id)
         cookie_ptrs[i] = cookies[i];
     }
 
+    // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, DELETE_MOVIE_FROM_COLLECTION_FIRST_URL);
@@ -972,11 +1055,13 @@ void delete_movie_from_collection(char *collection_id, char *movie_id)
     strcat(url, DELETE_MOVIE_FROM_COLLECTION_SECOND_URL);
     strcat(url, "/");
     strcat(url, movie_id);
+
     char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
 
+    // extract the status code from the response
     char status[4];
     strncpy(status, response + strlen("HTTP/1.1 "), 3);  // skip HTTP/1.1 to get the status code
     status[3] = '\0';

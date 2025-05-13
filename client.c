@@ -76,9 +76,9 @@ int main()
         } else if (!strncmp(command, "add_movie", 9)) {
             printf("title=");
             char title[MAX_SHORT_LEN];
-            getchar();
-            fgets(title, MAX_SHORT_LEN, stdin);           
-            title[strcspn(title, "\n")] = '\0';
+            getchar();  // read the newline character left by scanf
+            fgets(title, MAX_SHORT_LEN, stdin);  // titles can have spaces
+            title[strcspn(title, "\n")] = '\0';  // remove the newline character
 
             printf("year=");
             int year;
@@ -87,8 +87,8 @@ int main()
             printf("description=");
             char description[MAX_SHORT_LEN];
             getchar();
-            fgets(description, MAX_SHORT_LEN, stdin);           
-            description[strcspn(description, "\n")] = '\0';
+            fgets(description, MAX_SHORT_LEN, stdin);  // descriptions can have spaces     
+            description[strcspn(description, "\n")] = '\0';  // remove the newline character
 
             printf("rating=");
             double rating;

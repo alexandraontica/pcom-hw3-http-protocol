@@ -1,18 +1,19 @@
-Username: alexandra.ontica  marius.tudosie
-Password: 1f6d38aca39c      a08da4ea959e
+Username: alexandra.ontica
+Password: 1f6d38aca39c
 id movie 1132 1147 1135
 
-am ales sa scriu in C pentru ca cel putin acum la inceput nu cred ca o sa am nevoie de vreo structura sau ceva din STL ce ar trebui eu sa implementez de mana in C => folosesc parson in json parsing, celalata biblioteca e de C++
-
-am pornit cu rezolvarea de la lab 9. am luat copy paste fisierele buffer, helper
-in requests am implementarea mea de la labul 9 pt post si get requests, o sa adaug in plus delete si put
-
-comentarii in engleza pentru consistency (asa erau in fisierele din lab)
-
-ruta de get e exact ca il lab + am adaugat tokenul pt authorisation + headerul la mesaj
-
-ruta de post: am scos body data count sau whatever, ii dau ca data direct jsonul sa il trimit; am adaugat headerul cu tokenul
-
-put request e exact la fel ca post
-
 functie auxiliara la add movie to collection pt ca vreau sa o apelez cand creez colectie noua fara sa imi afiseze mesajul de la add movie to collection
+
+--------------------------------------------------------------
+
+*Ontica Alexandra-Elena - 321CB*
+
+# Tema 3 - PCom
+
+Am ales sa scriu in C deoarece la inceputul temei nu am preconizat ca voi avea nevoie de vreo structura de date din STL. Drept urmare, pentru parsarea de JSONi am folosit Parson.
+
+Am pornit cu rezolvarea de la laboratoul 9. Am inclus in tema fisierele `helpers.c`, `helpers.h`, `buffer.c`, `buffer.h`, luate cu copy-paste (nu am modificat nimic). M-am folosit si de fisierul `requests.c` (si automat si `requests.h`) din lab, adaugand in plus la implementarile mele pentru `compute_get_request` si `compute_post_request` de la laborator si posibilitatea de a agauga un header cu token in mesaj si eliminand parametrul `body_data_count` deoarece acum ii trimit deja JSONul format. Am adaugat, de asemenea, functiile `compute_delete_request` si `compute_put_request` (m-am inspirat din implementarea celorlaltor 2 functii, de ex la PUT request se modifica doar headerul, in rest e identic cu POST).
+
+Am ales sa adaug pe alocuri comentarii in engleza ca sa pastrez stilul din laboratoare, unde comentariile si indicatiile erau tot in engleza.
+
+In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari si apelez functia corespunzatoare.
