@@ -1,11 +1,3 @@
-Username: alexandra.ontica
-Password: 1f6d38aca39c
-id movie 1132 1147 1135
-
-functie auxiliara la add movie to collection pt ca vreau sa o apelez cand creez colectie noua fara sa imi afiseze mesajul de la add movie to collection
-
---------------------------------------------------------------
-
 *Ontica Alexandra-Elena - 321CB*
 
 # Tema 3 - PCom
@@ -17,3 +9,37 @@ Am pornit cu rezolvarea de la laboratoul 9. Am inclus in tema fisierele `helpers
 Am ales sa adaug pe alocuri comentarii in engleza ca sa pastrez stilul din laboratoare, unde comentariile si indicatiile erau tot in engleza.
 
 In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari si apelez functia corespunzatoare.
+
+Functiile cu comenzi se afla in fisierul `commands.c`, cu semnaturile + alte define-uri in `commands.h`.
+
+Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globale in care sa le salvez.
+
+### Fiecare comanda urmeaza in mare aceeasi pasi:
+- (oprional) construiesc JSONul pe care trebuie sa il trimit catre server
+- construiesc URLul catre care trimit request
+- construiesc mesajul pe care il voi trimite cu functiile de compute
+- deschid o conexiune cu serverul
+- trimit mesajul catre server
+- astept raspunsul serverului
+- extrag statusul raspunsului (200, 403 etc.)
+- in functie de status, afisez fie "success" urmat de alte date necesare (in principal la GET am nevoie sa afisez si alte informatii), fie "error", urmat de eroarea primita de la server (extrasa din JSONul primit ca raspuns)
+- (optinal) in caz de succes, extrag datele utile din JSONul de raspuns si le salvez/afisez (ex: token, id-ul unei colectii nou create, toti userii etc.)
+- (optional) adaug cookie-urile primite in vectorul de cookies
+- clean up: eliberez memoria alocata dinamic si inchid conexiunea
+
+**!!** La toate comenzile am incercat sa pastrez formatul pentru output prezentat in cerinta (pe pagina unde sunt descrise functionalitatile clientului), am luat cu copy-paste mesajele de succes de pe site.
+
+#### Mentiuni:
+- cand verific daca statusul indica succes, verific ca primele 2 cifre sa fie 20 deoarece succesul poate fi indicat de coduri precum 200, 201 etc.
+- la fel si la eroare, verific ca primele doua cifre din status sa fie 40 ca sa imi prinda si coduri de genul 401, 403 etc.
+- am si un branch in if care prinde si alte statusuri, a fost de folos cand serverul arunca 500 ca sa stiu ca problema nu e de la mine
+
+#### Mici exceptii de la acest tipar:
+- la logout si logout_admin sterg si cookie-urile si tokenul de acces daca statusul este unul de succes
+- la **add_collection** am avut nevoie de mai multe requesturi ca sa rezolv cerinta:
+    - am o functie care respecta pasii descrisi mai sus care imi creeaza o colectie goala
+    - am o functie care adauga un film intr-o colectie pe care o apelez pentru fiecare film in parte
+    - ambele functii imi returneaza statusul intors ca sa il pot verifica in functia care le apeleaza
+- la **add_movie_to_collection** folosesc functia auxiliara pe care am folosit-o si la **add_collection**
+
+Alte detalii de implementare pe care am considerat ca trebuie sa le explic le-am scris in comentarii.
