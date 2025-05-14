@@ -9,8 +9,8 @@
 #include "helpers.h"
 #include "parson.h"
 
-int num_cookies = 0;
-char cookies[MAX_SHORT_LEN][MAX_LONG_LEN];
+char admin_cookies[MAX_LONG_LEN];
+char user_cookies[MAX_LONG_LEN];
 char token[MAX_LONG_LEN];
 
 int cmp_obj_by_id(const void *json_obj_a, const void *json_obj_b) {
@@ -23,6 +23,11 @@ int cmp_obj_by_id(const void *json_obj_a, const void *json_obj_b) {
 
 void login_admin(char *username, char *password) 
 {
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
+
     // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
     JSON_Object *root_obj = json_value_get_object(root_val);
@@ -36,7 +41,7 @@ void login_admin(char *username, char *password)
     strcat(url, LOGIN_ADMIN_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, NULL, 0, NULL);
+        &body_str, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -72,8 +77,7 @@ void login_admin(char *username, char *password)
 
     // save the cookie in the cookies array
     if (cookie) {
-        strcpy(cookies[num_cookies], cookie);
-        num_cookies++;
+        strcpy(admin_cookies, cookie);
     }
 
     close_connection(sockfd);
@@ -91,11 +95,10 @@ void add_user(char *username, char *password)
     json_object_set_string(root_obj, "password", password);
     char *body_str = json_serialize_to_string(root_val); 
 
-    // create the copy because the original matrix throws error when given as parameter to requests
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -103,7 +106,7 @@ void add_user(char *username, char *password)
     strcat(url, ADD_USER_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, NULL);
+        &body_str, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -136,17 +139,17 @@ void add_user(char *username, char *password)
 
 void get_users()
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_USERS_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -195,10 +198,10 @@ void get_users()
 
 void delete_user(char *username)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -207,7 +210,7 @@ void delete_user(char *username)
     strcat(url, "/");
     strcat(url, username);
 
-    char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, NULL);
+    char *message = compute_delete_request(HOST, url, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -239,17 +242,17 @@ void delete_user(char *username)
 
 void logout_admin()
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_ADMIN_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -263,10 +266,7 @@ void logout_admin()
         printf("SUCCESS: Admin delogat\n");
 
         // clear the cookies
-        for (int i = 0; i < num_cookies; i++) {
-            memset(cookies[i], 0, sizeof(cookies[i]));
-        }
-        num_cookies = 0;
+        memset(admin_cookies, 0, sizeof(admin_cookies));
 
         // clear the token
         memset(token, 0, sizeof(token));
@@ -298,10 +298,10 @@ void login(char *admin_username, char *username, char *password)
     json_object_set_string(root_obj, "password", password);
     char *body_str = json_serialize_to_string(root_val);
 
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL    
     char url[MAX_LONG_LEN];
@@ -309,7 +309,7 @@ void login(char *admin_username, char *username, char *password)
     strcat(url, LOGIN_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, NULL);
+        &body_str, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -345,8 +345,7 @@ void login(char *admin_username, char *username, char *password)
 
     // save the cookie in the cookies array
     if (cookie) {
-        strcpy(cookies[num_cookies], cookie);
-        num_cookies++;
+        strcpy(user_cookies, cookie);
     }
 
     close_connection(sockfd);
@@ -356,17 +355,17 @@ void login(char *admin_username, char *username, char *password)
 }
 
 void logout() {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, LOGOUT_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -380,10 +379,7 @@ void logout() {
         printf("SUCCESS: Utilizator delogat\n");
 
         // clear the cookies
-        for (int i = 0; i < num_cookies; i++) {
-            memset(cookies[i], 0, sizeof(cookies[i]));
-        }
-        num_cookies = 0;
+        memset(user_cookies, 0, sizeof(user_cookies));
 
         // clear the token
         memset(token, 0, sizeof(token));
@@ -407,17 +403,17 @@ void logout() {
 
 void get_access()
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_ACCESS_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, NULL);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, NULL);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -455,17 +451,17 @@ void get_access()
 
 void get_movies()
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_MOVIES_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -520,10 +516,10 @@ void get_movies()
 
 void get_movie(char *id)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -532,7 +528,7 @@ void get_movie(char *id)
     strcat(url, "/");
     strcat(url, id);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -598,11 +594,11 @@ void add_movie(char *title, int year, char *description, double rating)
     json_object_set_string(root_obj, "description", description);
     json_object_set_number(root_obj, "rating", rating);
     char *body_str = json_serialize_to_string(root_val);
-
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -610,7 +606,7 @@ void add_movie(char *title, int year, char *description, double rating)
     strcat(url, ADD_MOVIE_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, token);
+        &body_str, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -643,10 +639,10 @@ void add_movie(char *title, int year, char *description, double rating)
 
 void delete_movie(char *id)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -655,7 +651,7 @@ void delete_movie(char *id)
     strcat(url, "/");
     strcat(url, id);
 
-    char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
+    char *message = compute_delete_request(HOST, url, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -696,10 +692,10 @@ void update_movie(char *id, char *title, int year, char *description, double rat
     json_object_set_number(root_obj, "rating", rating);
     char *body_str = json_serialize_to_string(root_val);
 
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -709,7 +705,7 @@ void update_movie(char *id, char *title, int year, char *description, double rat
     strcat(url, id);
 
     char *message = compute_put_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, token);
+        &body_str, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -742,17 +738,17 @@ void update_movie(char *id, char *title, int year, char *description, double rat
 
 void get_collections() 
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
     strcpy(url, BASE_URL);
     strcat(url, GET_COLLECTIONS_URL);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -807,10 +803,10 @@ void get_collections()
 
 void get_collection(char *id)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -819,7 +815,7 @@ void get_collection(char *id)
     strcat(url, "/");
     strcat(url, id);
 
-    char *message = compute_get_request(HOST, url, NULL, cookie_ptrs, num_cookies, token);
+    char *message = compute_get_request(HOST, url, NULL, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -886,10 +882,10 @@ int add_empty_collection(char *title, int *id)
     json_object_set_string(root_obj, "title", title);
     char *body_str = json_serialize_to_string(root_val);
 
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -897,7 +893,7 @@ int add_empty_collection(char *title, int *id)
     strcat(url, ADD_COLLECTION_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, token);
+        &body_str, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -942,10 +938,10 @@ int add_movie_to_collection_aux(char *collection_id, int movie_id) {
     json_object_set_number(root_obj, "id", movie_id);
     char *body_str = json_serialize_to_string(root_val);
 
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -956,7 +952,7 @@ int add_movie_to_collection_aux(char *collection_id, int movie_id) {
     strcat(url, ADD_MOVIE_TO_COLLECTION_SECOND_URL);
 
     char *message = compute_post_request(HOST, url, CONTENT_TYPE,
-        &body_str, cookie_ptrs, num_cookies, token);
+        &body_str, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -1030,10 +1026,10 @@ void add_movie_to_collection(char *collection_id, int movie_id)
 
 void delete_collection(char *id)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -1042,7 +1038,7 @@ void delete_collection(char *id)
     strcat(url, "/");
     strcat(url, id);
 
-    char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
+    char *message = compute_delete_request(HOST, url, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);
@@ -1074,10 +1070,10 @@ void delete_collection(char *id)
 
 void delete_movie_from_collection(char *collection_id, char *movie_id)
 {
-    char *cookie_ptrs[num_cookies];
-    for (int i = 0; i < num_cookies; i++) {
-        cookie_ptrs[i] = cookies[i];
-    }
+    // create the cookies array
+    char *cookies_array[2];
+    cookies_array[0] = admin_cookies;
+    cookies_array[1] = user_cookies;
 
     // build the URL
     char url[MAX_LONG_LEN];
@@ -1089,7 +1085,7 @@ void delete_movie_from_collection(char *collection_id, char *movie_id)
     strcat(url, "/");
     strcat(url, movie_id);
 
-    char *message = compute_delete_request(HOST, url, cookie_ptrs, num_cookies, token);
+    char *message = compute_delete_request(HOST, url, cookies_array, NUM_COOKIES, token);
     int sockfd = open_connection(HOST, PORT, AF_INET, SOCK_STREAM, 0);
     send_to_server(sockfd, message);
     char *response = receive_from_server(sockfd);

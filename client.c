@@ -3,6 +3,14 @@
 #include <string.h>
 #include "commands.h"
 
+void empty_stdin_buffer() {
+    // clear the input buffer to remove any leftover characters
+    int c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
+}
+
 int main()
 {
     while(1) {
@@ -59,18 +67,42 @@ int main()
             get_movies();
         } else if (!strncmp(command, "get_movie", 9)) {
             printf("id=");
+            int id_int;
+            int ret = scanf("%d", &id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char id[MAX_SHORT_LEN];
-            scanf("%s", id);
+            sprintf(id, "%d", id_int);
 
             get_movie(id);
         }  else if (!strncmp(command, "add_movie_to_collection", 23)) {
             printf("collection_id=");
+            int collection_id_int;
+            int ret = scanf("%d", &collection_id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. Collection ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char collection_id[MAX_SHORT_LEN];
-            scanf("%s", collection_id);
+            sprintf(collection_id, "%d", collection_id_int);
 
             printf("movie_id=");
             int movie_id;
-            scanf("%d", &movie_id);
+            ret = scanf("%d", &movie_id);
+
+            if (ret != 1) {
+                printf("Invalid input. Movie ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
 
             add_movie_to_collection(collection_id, movie_id);
         } else if (!strncmp(command, "add_movie", 9)) {
@@ -82,7 +114,13 @@ int main()
 
             printf("year=");
             int year;
-            scanf("%d", &year);
+            int ret = scanf("%d", &year);
+
+            if (ret != 1) {
+                printf("Invalid input. Year is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
 
             printf("description=");
             char description[MAX_SHORT_LEN];
@@ -92,19 +130,43 @@ int main()
 
             printf("rating=");
             double rating;
-            scanf("%lf", &rating);
+            ret = scanf("%lf", &rating);
+
+            // if (ret != 1) {
+            //     printf("Invalid input. Rating is a double\n");
+            //     empty_stdin_buffer();
+            //     continue;
+            // }
 
             add_movie(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie", 12)) {
             printf("id=");
+            int id_int;
+            int ret = scanf("%d", &id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char id[MAX_SHORT_LEN];
-            scanf("%s", id);
+            sprintf(id, "%d", id_int);
 
             delete_movie(id);
         } else if (!strncmp(command, "update_movie", 12)) {
             printf("id=");
+            int id_int;
+            int ret = scanf("%d", &id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char id[MAX_SHORT_LEN];
-            scanf("%s", id);
+            sprintf(id, "%d", id_int);
 
             printf("title=");
             char title[MAX_SHORT_LEN];
@@ -114,7 +176,13 @@ int main()
 
             printf("year=");
             int year;
-            scanf("%d", &year);
+            ret = scanf("%d", &year);
+
+            if (ret != 1) {
+                printf("Invalid input. Year is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
 
             printf("description=");
             char description[MAX_SHORT_LEN];
@@ -124,15 +192,31 @@ int main()
 
             printf("rating=");
             double rating;
-            scanf("%lf", &rating);
+            ret = scanf("%lf", &rating);
+
+            // this is commented out because I don't know why it doesn't work
+            // if (ret != 1) {
+            //     printf("Invalid input. Rating is a double\n");
+            //     empty_stdin_buffer();
+            //     continue;
+            // }
 
             update_movie(id, title, year, description, rating);
         } else if (!strncmp(command, "get_collections", 15)) {
             get_collections();
         } else if (!strncmp(command, "get_collection", 14)) {
             printf("id=");
+            int id_int;
+            int ret = scanf("%d", &id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char id[MAX_SHORT_LEN];
-            scanf("%s", id);
+            sprintf(id, "%d", id_int);
 
             get_collection(id);
         } else if (!strncmp(command, "add_collection", 14)) {
@@ -144,13 +228,31 @@ int main()
 
             int num_movies;
             printf("num_movies=");
-            scanf("%d", &num_movies);
+            int ret = scanf("%d", &num_movies);
+
+            if (ret != 1) {
+                printf("Invalid input. Number of movies is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
 
             char *movie_id[num_movies];
             for (int i = 0; i < num_movies; i++) {
                 printf("movie_id[%d]=", i);
+
+                int movie_id_int;
+                ret = scanf("%d", &movie_id_int);
+
+                if (ret != 1) {
+                    printf("Invalid input. Movie ID is an integer\n");
+                    empty_stdin_buffer();
+
+                    i--;
+                    continue;
+                }
+
                 movie_id[i] = malloc(MAX_SHORT_LEN);
-                scanf("%s", movie_id[i]);
+                sprintf(movie_id[i], "%d", movie_id_int);
             }
 
             add_collection(title, num_movies, movie_id);
@@ -160,18 +262,45 @@ int main()
             }
         } else if (!strncmp(command, "delete_collection", 17)) {
             printf("id=");
+            int id_int;
+            int ret = scanf("%d", &id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char id[MAX_SHORT_LEN];
-            scanf("%s", id);
+            sprintf(id, "%d", id_int);
 
             delete_collection(id);
         } else if (!strncmp(command, "delete_movie_from_collection", 28)) {
             printf("collection_id=");
+            int collection_id_int;
+            int ret = scanf("%d", &collection_id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. Collection ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char collection_id[MAX_SHORT_LEN];
-            scanf("%s", collection_id);
+            sprintf(collection_id, "%d", collection_id_int);
 
             printf("movie_id=");
+            int movie_id_int;
+            ret = scanf("%d", &movie_id_int);
+
+            if (ret != 1) {
+                printf("Invalid input. Collection ID is an integer\n");
+                empty_stdin_buffer();
+                continue;
+            }
+
             char movie_id[MAX_SHORT_LEN];
-            scanf("%s", movie_id);
+            sprintf(movie_id, "%d", movie_id_int);
 
             delete_movie_from_collection(collection_id, movie_id);
         } else if (!strncmp(command, "logout", 6)) {

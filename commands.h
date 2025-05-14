@@ -6,6 +6,7 @@
 #define HOST "63.32.125.183"
 #define PORT 8081
 #define CONTENT_TYPE "application/json"
+#define NUM_COOKIES 2
 #define BASE_URL "/api/v1/tema"
 #define LOGIN_ADMIN_URL "/admin/login"
 #define ADD_USER_URL "/admin/users"

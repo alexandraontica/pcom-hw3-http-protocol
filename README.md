@@ -1,4 +1,5 @@
 *Ontica Alexandra-Elena - 321CB*
+1f6d38aca39c
 
 # Tema 3 - PCom
 
@@ -16,6 +17,7 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
 
 ### Fiecare comanda urmeaza in mare aceeasi pasi:
 - (oprional) construiesc JSONul pe care trebuie sa il trimit catre server
+- creez un vector de cookies care va fi adaugat la mesaj
 - construiesc URLul catre care trimit request
 - construiesc mesajul pe care il voi trimite cu functiile de compute
 - deschid o conexiune cu serverul
@@ -31,7 +33,7 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
     - in caz de eroare:
         - extrag eroarea din JSONul primit
         - afisez eroarea
-- (optional) adaug cookie-urile primite in vectorul de cookies
+- (optional) adaug cookie-urile primite in variabilele globale pentru cookie-uri
 - clean up: eliberez memoria alocata dinamic si inchid conexiunea
 
 **!!** La toate comenzile am incercat sa pastrez formatul pentru output prezentat in cerinta (pe pagina unde sunt descrise functionalitatile clientului), am luat cu copy-paste mesajele de succes de pe site.
@@ -48,6 +50,16 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
     - am o functie care adauga un film intr-o colectie pe care o apelez pentru fiecare film in parte
     - ambele functii imi returneaza statusul intors ca sa il pot verifica in functia care le apeleaza
 - la **add_movie_to_collection** folosesc functia auxiliara pe care am folosit-o si la **add_collection**
+
+#### add_collection - edge cases
+In enunt nu este specificat ce se intampla daca, la adaugarea unei colectii, id-ul unui film e gresit (nu exista/nu sunt owner). Am preferat sa pastrez colectia in caz de eroare (nu o sterg). Pastrez si filmele adaugate cu succes pana in punctul in care a avut loc eroarea. Filmele ce sunt adaugate dupa totusi nu sunt luate in considerare si nu printez mesaj de succes, printez eroare.
+
+Puteam sa sterg colectia sau sa adaug si filmele ce urmeaza dupa id-ul prost, dar cum cerinta nu cere aceste lucruri explicit am decis sa las asa.
+
+De asemenea, presupun ca userul stie ca la add_collection trebuie sa dea id-uri de filme diferite (pare ceva de bun simt). Daca da acelasi id de mai multe ori va primi eroare, colectia va fi totusi creata si filmul va fi adaugat doar o data (din nou decid sa nu sterg colectia pentru ca acest caz nu e prevazut in cerinta).
+
+#### Observatie
+Unele id-uri le-am dat ca parametru direct ca string, nu ca int, deoarece am nevoie de ele doar ca sa le adaug la URL si imi e mai usor asa sa fac direct strcat.
 
 ### Probleme 
 #### 1
