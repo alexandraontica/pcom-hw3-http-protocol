@@ -551,22 +551,19 @@ void get_movie(char *id)
             // when I parsed the rating as a double, I always got 0.0
             // so I had to check if it's a string or a number
             // and parse it accordingly
-            double rating;
+            float rating;
             JSON_Value *r_val = json_object_get_value(root_obj, "rating");
-            if (json_value_get_type(r_val) == JSONNumber) {
-                rating = json_value_get_number(r_val);
-            } else if (json_value_get_type(r_val) == JSONString) {
-                const char *s = json_value_get_string(r_val);
-                rating = atof(s);
-            }
+            char *rating_string = (char *)json_value_get_string(r_val);
+            rating = atof(rating_string);
+            sprintf(rating_string, "%.1f", rating);
 
             printf("{\n"
                    "  \"title\": \"%s\",\n"
                    "  \"year\": %d,\n"
                    "  \"description\": \"%s\",\n"
-                   "  \"rating\": %.1f\n"
+                   "  \"rating\": \"%s\"\n"  // if I print the rating as a float the checker disregards everything after . (1.6 is intrepreted as 1)
                    "}\n",
-               title, year, description, rating);        
+               title, year, description, rating_string);        
         } else if (!strncmp(status, "40", 2)) {
             const char *error_message = json_object_get_string(root_obj, "error");
             printf("ERROR: %s\n", error_message);
