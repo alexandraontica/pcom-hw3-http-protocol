@@ -24,6 +24,11 @@ int main()
             fgets(username, MAX_SHORT_LEN, stdin);
             username[strcspn(username, "\n")] = '\0';
 
+            if (strchr(username, ' ')) {
+                printf("ERROR: Username-ul contine spatii.");
+                continue;
+            }
+
             printf("password=");
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
@@ -36,10 +41,15 @@ int main()
             fgets(username, MAX_SHORT_LEN, stdin);
             username[strcspn(username, "\n")] = '\0';
 
+            if (strchr(username, ' ')) {
+                printf("ERROR: Username-ul contine spatii.");
+                continue;
+            }
+
             printf("password=");
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
-            password[strcspn(username, "\n")] = '\0';
+            password[strcspn(password, "\n")] = '\0';
 
             add_user(username, password);
         } else if (!strncmp(command, "get_users", 9)) {
@@ -55,6 +65,11 @@ int main()
                 continue;
             }
 
+            if (strchr(username, ' ')) {
+                printf("ERROR: Username-ul contine spatii.");
+                continue;
+            }
+
             delete_user(username);
         } else if (!strncmp(command, "logout_admin", 12)) {
             logout_admin();
@@ -64,15 +79,25 @@ int main()
             fgets(admin_username, MAX_SHORT_LEN, stdin);
             admin_username[strcspn(admin_username, "\n")] = '\0';
 
+            if (strchr(admin_username, ' ')) {
+                printf("ERROR: Username-ul contine spatii.");
+                continue;
+            }
+
             printf("username=");
             char username[MAX_SHORT_LEN];
             fgets(username, MAX_SHORT_LEN, stdin);
             username[strcspn(username, "\n")] = '\0';
 
+            if (strchr(username, ' ')) {
+                printf("ERROR: Username-ul contine spatii.");
+                continue;
+            }
+
             printf("password=");
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
-            password[strcspn(username, "\n")] = '\0';
+            password[strcspn(password, "\n")] = '\0';
 
             login(admin_username, username, password);
         } else if (!strncmp(command, "get_access", 10)) {
