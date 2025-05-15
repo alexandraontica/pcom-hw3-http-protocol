@@ -581,7 +581,7 @@ void get_movie(char *id)
     free(response);
 }
 
-void add_movie(char *title, int year, char *description, double rating)
+void add_movie(char *title, int year, char *description, float rating)
 {
     // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();
@@ -678,7 +678,7 @@ void delete_movie(char *id)
     free(response);
 }
 
-void update_movie(char *id, char *title, int year, char *description, double rating)
+void update_movie(char *id, char *title, int year, char *description, float rating)
 {
     // build the JSON I will send to the server
     JSON_Value  *root_val = json_value_init_object();

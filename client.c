@@ -179,13 +179,8 @@ int main()
             fgets(rating_str, MAX_SHORT_LEN, stdin);
             rating_str[strcspn(rating_str, "\n")] = '\0';
 
-            double rating;
-            ret = sscanf(rating_str, "%lf%c", &rating, &endptr);
-
-            // if (ret != 1 || endptr != '\0') {
-            //     printf("Invalid input. Rating is a double\n");
-            //     continue;
-            // }
+            float rating;
+            ret = sscanf(rating_str, "%f", &rating);
 
             add_movie(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie_from_collection", 28)) {
@@ -276,13 +271,8 @@ int main()
             fgets(rating_str, MAX_SHORT_LEN, stdin);
             rating_str[strcspn(rating_str, "\n")] = '\0';
 
-            double rating;
-            ret = sscanf(rating_str, "%lf%c", &rating, &endptr);
-
-            // if (ret != 1 || endptr != '\0') {
-            //     printf("Invalid input. Rating is a double\n");
-            //     continue;
-            // }
+            float rating;
+            ret = sscanf(rating_str, "%f", &rating);
 
             update_movie(id, title, year, description, rating);
         } else if (!strncmp(command, "get_collections", 15)) {

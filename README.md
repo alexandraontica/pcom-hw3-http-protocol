@@ -1,5 +1,4 @@
 *Ontica Alexandra-Elena - 321CB*
-1f6d38aca39c
 
 # Tema 3 - PCom
 
@@ -9,7 +8,7 @@ Am pornit cu rezolvarea de la laboratoul 9. Am inclus in tema fisierele `helpers
 
 Am ales sa adaug pe alocuri comentarii in engleza ca sa pastrez stilul din laboratoare, unde comentariile si indicatiile erau tot in engleza.
 
-In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari si apelez functia corespunzatoare.
+In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari, verific daca sunt valizi (daca sunt numere cand trebuie sa fie numere, username-urile sa nu aiba spatii) si apelez functia corespunzatoare.
 
 Functiile cu comenzi se afla in fisierul `commands.c`, cu semnaturile + alte define-uri in `commands.h`.
 
