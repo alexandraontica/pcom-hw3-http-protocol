@@ -8,7 +8,7 @@ Am pornit cu rezolvarea de la laboratoul 9. Am inclus in tema fisierele `helpers
 
 Am ales sa adaug pe alocuri comentarii in engleza ca sa pastrez stilul din laboratoare, unde comentariile si indicatiile erau tot in engleza.
 
-In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari, verific daca sunt valizi (daca sunt numere cand trebuie sa fie numere, username-urile sa nu aiba spatii) si apelez functia corespunzatoare.
+In client citesc cate o comanda pe rand (o iteratie din while = o comanda) si, in functie de comanda, citesc parametrii necesari, verific daca sunt valizi (username/parola fara spatii, ca sunt numere naturale/reale acolo unde e cazul) si apelez functia corespunzatoare.
 
 Functiile cu comenzi se afla in fisierul `commands.c`, cu semnaturile + alte define-uri in `commands.h`.
 
@@ -51,23 +51,17 @@ Pentru stocarea cookie-urilor si a tokenului am ales sa folosesc variabile globa
 - la **add_movie_to_collection** folosesc functia auxiliara pe care am folosit-o si la **add_collection**
 
 #### add_collection - edge cases
-In enunt nu este specificat ce se intampla daca, la adaugarea unei colectii, id-ul unui film e gresit (nu exista/nu sunt owner). Am preferat sa pastrez colectia in caz de eroare (nu o sterg). Pastrez si filmele adaugate cu succes pana in punctul in care a avut loc eroarea. Filmele ce sunt adaugate dupa totusi nu sunt luate in considerare si nu printez mesaj de succes, printez eroare.
+In enunt nu este specificat ce se intampla daca, la adaugarea unei colectii, id-ul unui film e gresit (nu exista/nu sunt owner). Am preferat sa pastrez colectia in acest caz de eroare (nu o sterg). Totusi nu printez mesaj de succes, printez eroarea.
 
-Puteam sa sterg colectia sau sa adaug si filmele ce urmeaza dupa id-ul prost, dar cum cerinta nu cere aceste lucruri explicit am decis sa las asa.
+Puteam sa sterg colectia, dar cum cerinta nu cere acest lucru explicit am decis sa las asa.
 
 De asemenea, presupun ca userul stie ca la add_collection trebuie sa dea id-uri de filme diferite (pare ceva de bun simt). Daca da acelasi id de mai multe ori va primi eroare, colectia va fi totusi creata si filmul va fi adaugat doar o data (din nou decid sa nu sterg colectia pentru ca acest caz nu e prevazut in cerinta).
 
 #### Observatie
-Unele id-uri le-am dat ca parametru direct ca string, nu ca int, deoarece am nevoie de ele doar ca sa le adaug la URL si imi e mai usor asa sa fac direct strcat.
+Unele id-uri le-am dat ca parametru direct ca string, nu ca int, deoarece am nevoie de ele doar ca sa le adaug la URL si imi e mai usor asa ca sa fac direct strcat fara conversii.
 
 ### Probleme 
-#### 1
-Pe langa toate probleme semnalate pe forum legate de server (caruia ii dadeam toti DoS la cate requesturi trimiteam si normal ca nu mergea mereu), am avut probleme si cu timeout-ul din checker. Acesta este cam mic, 1s, tinand cont ca reply-urile la requesturi vin destul de greu cand serverul e ocupat. De cele mai multe ori checkul trimitea requesturi noi fara sa primeasca reply la requestul vechi si din cauza asta considera testele picate desi reply-ul venea corect ulterior. Daca cresc acest timeout la 3-5s imi trec toate testele.
-
-Problema aceasta se vedea cel mai clar la colectii (am semnalat si pe forum problema). Din acest motiv am incetat la **add_collection** sa mai afisez si detaliile despre colectia adaugata (s-a scris pe forum ca este ok asa) si afisez doar mesaj de succes. Sper ca nu se depuncteaza. La timeout mai mare de o secunda merge mereu si cu toate detaliile afisate, la timeout mic am erori, nu apuca sa afiseze toate informatiile la timp si interfereza cu testul urmator.
-
-#### 2
-O alta problema observata este ca la **get_movies**, **get_collections** si **get_collection**, listele de filme/colectii returnate nu ajung mereu in ordine crescatoare dupa id. O sesiune ar merge asa:
+O problema observata este ca la **get_movies**, **get_collections** si **get_collection**, listele de filme/colectii returnate nu ajung mereu in ordine crescatoare dupa id. O sesiune ar merge asa:
 
 ```
 add_movie

@@ -1006,8 +1006,7 @@ void add_collection(char *title, int num_movies, char *movie_id[])
     }
 
     // print the details of the collection (get collection already does that)
-    // get_collection(id_str);
-    printf("SUCCESS: Colecție adăugată\n");
+    get_collection(id_str);
 }
 
 void add_movie_to_collection(char *collection_id, int movie_id)

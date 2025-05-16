@@ -3,12 +3,28 @@
 #include <string.h>
 #include "commands.h"
 
-void empty_stdin_buffer() {
-    // clear the input buffer to remove any leftover characters
-    int c = getchar();
-    while (c != '\n' && c != EOF) {
-        c = getchar();
+int is_int(char *input) {
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] < '0' || input[i] > '9') {
+            return 0;
+        }
     }
+    return 1;
+}
+
+int is_float(char *input) {
+    int found_dot = 0;
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] == '.') {
+            if (found_dot) {
+                return 0;
+            }
+            found_dot = 1;
+        } else if (input[i] < '0' || input[i] > '9') {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int main()
@@ -25,7 +41,7 @@ int main()
             username[strcspn(username, "\n")] = '\0';
 
             if (strchr(username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
+                printf("ERROR: Username-ul contine spatii.\n");
                 continue;
             }
 
@@ -33,6 +49,11 @@ int main()
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
             password[strcspn(password, "\n")] = '\0';
+
+            if (strchr(password, ' ')) {
+                printf("ERROR: Parola contine spatii.\n");
+                continue;
+            }
 
             login_admin(username, password);
         } else if (!strncmp(command, "add_user", 8)) {
@@ -42,7 +63,7 @@ int main()
             username[strcspn(username, "\n")] = '\0';
 
             if (strchr(username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
+                printf("ERROR: Username-ul contine spatii.\n");
                 continue;
             }
 
@@ -50,6 +71,11 @@ int main()
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
             password[strcspn(password, "\n")] = '\0';
+
+            if (strchr(password, ' ')) {
+                printf("ERROR: Parola contine spatii.\n");
+                continue;
+            }
 
             add_user(username, password);
         } else if (!strncmp(command, "get_users", 9)) {
@@ -61,12 +87,7 @@ int main()
             username[strcspn(username, "\n")] = '\0';
 
             if (strchr(username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
-                continue;
-            }
-
-            if (strchr(username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
+                printf("ERROR: Username-ul contine spatii.\n");
                 continue;
             }
 
@@ -80,7 +101,7 @@ int main()
             admin_username[strcspn(admin_username, "\n")] = '\0';
 
             if (strchr(admin_username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
+                printf("ERROR: Username-ul contine spatii.\n");
                 continue;
             }
 
@@ -90,7 +111,7 @@ int main()
             username[strcspn(username, "\n")] = '\0';
 
             if (strchr(username, ' ')) {
-                printf("ERROR: Username-ul contine spatii.");
+                printf("ERROR: Username-ul contine spatii.\n");
                 continue;
             }
 
@@ -98,6 +119,11 @@ int main()
             char password[MAX_SHORT_LEN];
             fgets(password, MAX_SHORT_LEN, stdin);
             password[strcspn(password, "\n")] = '\0';
+
+            if (strchr(password, ' ')) {
+                printf("ERROR: Parola contine spatii.\n");
+                continue;
+            }
 
             login(admin_username, username, password);
         } else if (!strncmp(command, "get_access", 10)) {
@@ -110,12 +136,8 @@ int main()
             fgets(id, MAX_SHORT_LEN, stdin);
             id[strcspn(id, "\n")] = '\0';
 
-            int id_int;
-            char endptr;
-            int ret = sscanf(id, "%d%c", &id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. ID is an integer\n");
+            if (!is_int(id)) {
+                printf("ERROR: Id trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -126,12 +148,8 @@ int main()
             fgets(collection_id, MAX_SHORT_LEN, stdin);
             collection_id[strcspn(collection_id, "\n")] = '\0';
 
-            int collection_id_int;
-            char endptr;
-            int ret = sscanf(collection_id, "%d%c", &collection_id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Collection ID is an integer\n");
+            if (!is_int(collection_id)) {
+                printf("ERROR: Id-ul colectiei trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -140,47 +158,51 @@ int main()
             fgets(movie_id_str, MAX_SHORT_LEN, stdin);
             movie_id_str[strcspn(movie_id_str, "\n")] = '\0';
 
-            int movie_id;
-            ret = sscanf(movie_id_str, "%d%c", &movie_id, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Movie ID is an integer\n");
+            if (!is_int(movie_id_str)) {
+                printf("ERROR: Id-ul filmului trebuie sa fie un numar natural.\n");
                 continue;
             }
+
+            int movie_id;
+            sscanf(movie_id_str, "%d", &movie_id);
 
             add_movie_to_collection(collection_id, movie_id);
         } else if (!strncmp(command, "add_movie", 9)) {
             printf("title=");
             char title[MAX_SHORT_LEN];
             fgets(title, MAX_SHORT_LEN, stdin);  // titles can have spaces
-            title[strcspn(title, "\n")] = '\0';  // remove the newline character
+            title[strcspn(title, "\n")] = '\0';
 
             printf("year=");
             char year_str[MAX_SHORT_LEN];
             fgets(year_str, MAX_SHORT_LEN, stdin);
             year_str[strcspn(year_str, "\n")] = '\0';
 
-            int year;
-            char endptr;
-            int ret = sscanf(year_str, "%d%c", &year, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Year is an integer\n");
+            if (!is_int(year_str)) {
+                printf("ERROR: Anul trebuie sa fie un numar natural.\n");
                 continue;
             }
+
+            int year;
+            sscanf(year_str, "%d", &year);
 
             printf("description=");
             char description[MAX_SHORT_LEN];
             fgets(description, MAX_SHORT_LEN, stdin);  // descriptions can have spaces     
-            description[strcspn(description, "\n")] = '\0';  // remove the newline character
+            description[strcspn(description, "\n")] = '\0';
 
             printf("rating=");
             char rating_str[MAX_SHORT_LEN];
             fgets(rating_str, MAX_SHORT_LEN, stdin);
             rating_str[strcspn(rating_str, "\n")] = '\0';
 
+            if (!is_float(rating_str)) {
+                printf("ERROR: Rating-ul trebuie sa fie un numar real.\n");
+                continue;
+            }
+
             float rating;
-            ret = sscanf(rating_str, "%f", &rating);
+            sscanf(rating_str, "%f", &rating);
 
             add_movie(title, year, description, rating);
         } else if (!strncmp(command, "delete_movie_from_collection", 28)) {
@@ -189,12 +211,8 @@ int main()
             fgets(collection_id, MAX_SHORT_LEN, stdin);
             collection_id[strcspn(collection_id, "\n")] = '\0';
 
-            int collection_id_int;
-            char endptr;
-            int ret = sscanf(collection_id, "%d%c", &collection_id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Collection ID is an integer\n");
+            if (!is_int(collection_id)) {
+                printf("ERROR: Id-ul colectiei trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -203,11 +221,8 @@ int main()
             fgets(movie_id, MAX_SHORT_LEN, stdin);
             movie_id[strcspn(movie_id, "\n")] = '\0';
 
-            int movie_id_int;
-            ret = sscanf(movie_id, "%d%c", &movie_id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Movie ID is an integer\n");
+            if (!is_int(movie_id)) {
+                printf("ERROR: Id-ul filmului trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -218,12 +233,8 @@ int main()
             fgets(id, MAX_SHORT_LEN, stdin);
             id[strcspn(id, "\n")] = '\0';
 
-            int id_int;
-            char endptr;
-            int ret = sscanf(id, "%d%c", &id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. ID is an integer\n");
+            if (!is_int(id)) {
+                printf("ERROR: Id-ul filmului trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -234,12 +245,8 @@ int main()
             fgets(id, MAX_SHORT_LEN, stdin);
             id[strcspn(id, "\n")] = '\0';
 
-            int id_int;
-            char endptr;
-            int ret = sscanf(id, "%d%c", &id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. ID is an integer\n");
+            if (!is_int(id)) {
+                printf("ERROR: Id-ul filmului trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -253,13 +260,13 @@ int main()
             fgets(year_str, MAX_SHORT_LEN, stdin);
             year_str[strcspn(year_str, "\n")] = '\0';
 
-            int year;
-            ret = sscanf(year_str, "%d%c", &year, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Year is an integer\n");
+            if (!is_int(year_str)) {
+                printf("ERROR: Anul trebuie sa fie un numar natural.\n");
                 continue;
             }
+
+            int year;
+            sscanf(year_str, "%d", &year);
 
             printf("description=");
             char description[MAX_SHORT_LEN];
@@ -271,8 +278,13 @@ int main()
             fgets(rating_str, MAX_SHORT_LEN, stdin);
             rating_str[strcspn(rating_str, "\n")] = '\0';
 
+            if (!is_float(rating_str)) {
+                printf("ERROR: Rating-ul trebuie sa fie un numar real.\n");
+                continue;
+            }
+
             float rating;
-            ret = sscanf(rating_str, "%f", &rating);
+            sscanf(rating_str, "%f", &rating);
 
             update_movie(id, title, year, description, rating);
         } else if (!strncmp(command, "get_collections", 15)) {
@@ -283,12 +295,8 @@ int main()
             fgets(id, MAX_SHORT_LEN, stdin);
             id[strcspn(id, "\n")] = '\0';
 
-            int id_int;
-            char endptr;
-            int ret = sscanf(id, "%d%c", &id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. ID is an integer\n");
+            if (!is_int(id)) {
+                printf("ERROR: Id-ul colectiei trebuie sa fie un numar natural.\n");
                 continue;
             }
 
@@ -305,13 +313,12 @@ int main()
             fgets(num_movies_str, MAX_SHORT_LEN, stdin);
             num_movies_str[strcspn(num_movies_str, "\n")] = '\0';
 
-            char endptr;
-            int ret = sscanf(num_movies_str, "%d%c", &num_movies, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. Number of movies is an integer\n");
+            if (!is_int(num_movies_str)) {
+                printf("ERROR: Numarul de filme trebuie sa fie natural.\n");
                 continue;
             }
+
+            sscanf(num_movies_str, "%d", &num_movies);
 
             char *movie_id[num_movies];
             for (int i = 0; i < num_movies; i++) {
@@ -320,12 +327,10 @@ int main()
                 fgets(movie_id[i], MAX_SHORT_LEN, stdin);
                 movie_id[i][strcspn(movie_id[i], "\n")] = '\0';
 
-                int movie_id_int;
-                char endptr;
-                int ret = sscanf(movie_id[i], "%d%c", &movie_id_int, &endptr);
-
-                if (ret != 1 || endptr != '\0') {
-                    printf("Invalid input. Movie ID is an integer\n");
+                if (!is_int(movie_id[i])) {
+                    printf("ERROR: Id-ul filmului trebuie sa fie un numar natural.\n");
+                    free(movie_id[i]);
+                    i--;
                     continue;
                 }
             }
@@ -341,12 +346,8 @@ int main()
             fgets(id, MAX_SHORT_LEN, stdin);
             id[strcspn(id, "\n")] = '\0';
 
-            int id_int;
-            char endptr;
-            int ret = sscanf(id, "%d%c", &id_int, &endptr);
-
-            if (ret != 1 || endptr != '\0') {
-                printf("Invalid input. ID is an integer\n");
+            if (!is_int(id)) {
+                printf("ERROR: Id-ul colectiei trebuie sa fie un numar natural.\n");
                 continue;
             }
 
